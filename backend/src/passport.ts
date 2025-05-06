@@ -9,17 +9,8 @@ export const configurePassport = (passport: PassportStatic): PassportStatic => {
         return done(null, user._id);
     });
 
-    passport.deserializeUser(async (id: string, done) => {
-        User.findById(id)
-        .then(user => {
-            if(!user) {
-                return done(new Error(USER_NOT_FOUND_ERR));
-            }
-            return done(null, user);
-        })
-        .catch(error => {
-            return done(error);
-        })
+    passport.deserializeUser(async (user: string, done) => {
+        return done(null, user);
     });
 
     passport.use(
@@ -33,11 +24,11 @@ export const configurePassport = (passport: PassportStatic): PassportStatic => {
                             return done(null, false, { message: INCORRECT_EMAIL_OR_PASSWORD_ERR });
                         }
                         user.comparePassword(password, (error, isMatch) => {
-                            if (error) {
+                            if (error || !isMatch) {
                                 return done(null, false, { message: INCORRECT_EMAIL_OR_PASSWORD_ERR });
                             }
 
-                            return done(null, user._id);
+                            return done(null, user);
                         })
                     })
                     .catch(error => {

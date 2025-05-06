@@ -2,10 +2,9 @@ import { Express } from 'express';
 import { Schema, Model, Document, Types } from 'mongoose';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import { SALT_FACTOR } from '../consts/constants';
 
-const SALT_FACTOR = parseInt(process.env.SALT_FACTOR || "15");
-
-interface IUser extends Document, Express.User {
+export interface IUser extends Document, Express.User {
     _id: Types.ObjectId;
     email: string;
     passwordHash: string;
