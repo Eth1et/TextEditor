@@ -14,6 +14,13 @@ const OrgMembershipSchema: Schema<IOrgMembership> = new mongoose.Schema({
     userID: { type: Schema.Types.ObjectId, required: true },
     orgID: { type: Schema.Types.ObjectId, required: true },
     admin: { type: Boolean, required: true }
+}, {
+    timestamps: true,
+    toJSON: {
+        transform(_doc, ret) {
+            return {};
+        },
+    },
 });
 
 export const OrgMembership: Model<IOrgMembership> = mongoose.model<IOrgMembership>('OrgMembership', OrgMembershipSchema);

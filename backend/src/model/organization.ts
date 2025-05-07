@@ -12,6 +12,17 @@ export interface IOrg extends Document {
 const OrgSchema: Schema<IOrg> = new mongoose.Schema({
     name: { type: String, required: true, unique: true, index: true },
     description: { type: String },
+}, {
+    timestamps: true,
+    toJSON: {
+        transform(_doc, ret) {
+            delete ret._id;
+            delete ret.__v;
+            delete ret.createdAt;
+            delete ret.updatedAt;
+            return ret;
+        },
+    },
 });
 
 export const Org: Model<IOrg> = mongoose.model<IOrg>('Org', OrgSchema);

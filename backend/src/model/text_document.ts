@@ -26,6 +26,17 @@ const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
 
     title: { type: String },
     text: { type: String },
+}, {
+    timestamps: true,
+    toJSON: {
+        transform(_doc, ret) {
+            delete ret._id;
+            delete ret.__v;
+            delete ret.createdAt;
+            delete ret.updatedAt;
+            return ret;
+        },
+    },
 });
 
 export const TextDocument: Model<ITextDocument> = mongoose.model<ITextDocument>('TextDocument', TextDocumentSchema);

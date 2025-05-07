@@ -25,6 +25,10 @@ const UserSchema: Schema<IUser> = new mongoose.Schema({
     toJSON: {
         transform(_doc, ret) {
             delete ret.passwordHash;
+            delete ret._id;
+            delete ret.__v;
+            delete ret.createdAt;
+            delete ret.updatedAt;
             return ret;
         },
     },

@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
+import MongoStore from 'connect-mongo';
 import { Request, Response, NextFunction } from 'express';
 import { configureRoutes } from './routes';
 import { configurePassport } from './passport';
@@ -49,6 +50,11 @@ app.use(
         secret: process.env.SESSION_SECRET || 'fallback_session_secret',
         resave: false,
         saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.DB_URL,
+            ttl: 14 * 24 * 60 * 60, // 14 days expiration
+            autoRemove: 'native',
+        }),
         cookie: {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

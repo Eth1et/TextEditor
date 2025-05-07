@@ -6,7 +6,13 @@ export const
     REGISTER_SUCCESS = "Succesfully registered.",
     PASSWORD_UPDATE_SUCCESS = 'Successfully updated your password.',
     ACCOUNT_DELETE_SUCCESS= 'Successfully deleted your account',
-    DB_CONNECT_SUCCESS = "Successfully connected to MongoDB.";
+    DB_CONNECT_SUCCESS = "Successfully connected to MongoDB.",
+    ORG_CREATED_SUCCESS = 'Successfully created organization.',
+    ORG_DELETD_SUCESS = 'Successfully deleted organization.',
+    ORG_UPDATED_SUCCESS = 'Successfully updated organization.',
+    MEMBER_ADD_SUCCESS = 'Successfully added member.',
+    MEMBER_REMOVED_SUCCESS = 'Successfully removed member.',
+    MEMBER_UPDATE_SUCCESS = 'Successfully updated membership details.';
 
 
 // Error
@@ -21,4 +27,11 @@ export const
     EMAIL_ALREADY_IN_USE_ERR = 'Email has already been used.',
     SESSION_EXPIRED_ERR = 'Your session is no longer valid. Log in!',
     INCORRECT_PASSWORD_ERR = 'Incorrect Password.',
-    PASSWORDS_DONT_MATCH_ERR = 'Passwords do not match.';
+    PASSWORDS_DONT_MATCH_ERR = 'Passwords do not match.',
+    ORG_NAME_TAKEN_ERR = 'Organization name is already taken.',
+    USER_NOT_MEMBER_OF_ORG_ERR = 'You are not a member of that organization.',
+    NO_ADMIN_PERMISSION_ON_ORG_ERR = 'Prohibited action! You are not an admin of the organization.',
+    NO_USER_WITH_GIVEN_EMAIL_ERR = 'There is no user with the given email.',
+    USER_ALREADY_MEMBER_ERR = 'The user is already a member of the organization.',
+    CANNOT_REMOVE_SELF_ERR = 'You cannot remove yourself from an organization, delete it!',
+    CANNOT_UPDATE_SELF_MEMBERSHIP_ERR = 'You cannot change your own membership!';

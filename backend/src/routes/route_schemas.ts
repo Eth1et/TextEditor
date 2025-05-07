@@ -9,6 +9,7 @@ import {
     MAX_ORG_NAME_LENGTH,
     MAX_ORG_DESC_LENGTH
 } from '../consts/constants';
+import { Access } from '../model/access';
 
 export const validate =
     (schema: ZodSchema) =>
@@ -35,12 +36,12 @@ export const updatePasswordSchema = z.object({
 });
 
 export const loginSchema = z.object({
-    email: z.string().email(),
+    email: z.string().email().toLowerCase(),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
 
 export const registerSchema = z.object({
-    email: z.string().email(),
+    email: z.string().email().toLowerCase(),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     rePassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 }).refine(data => data.password === data.rePassword, {
@@ -63,24 +64,72 @@ export const createOrgSchema = z.object({
 });
 
 export const deleteOrgSchema = z.object({
+    orgID: z.string(),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
 
 export const updateOrgSchema = z.object({
+    orgID: z.string(),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     name: z.string().min(MIN_ORG_NAME_LENGTH).max(MAX_ORG_NAME_LENGTH),
     description: z.string().max(MAX_ORG_DESC_LENGTH),
 });
 
 export const addMemberSchema = z.object({
-    email: z.string().email(),
+    orgID: z.string(),
+    email: z.string().email().toLowerCase(),
     admin: z.boolean(),
 });
 
 export const removeMemberSchema = z.object({
-    email: z.string().email(),
+    orgID: z.string(),
+    email: z.string().email().toLowerCase(),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
 
 export const updateMemberSchema = z.object({
-    email: z.string().email(),
+    orgID: z.string(),
+    email: z.string().email().toLowerCase(),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     admin: z.boolean(),
+});
+
+export const queryMembersSchema = z.object({
+    orgID: z.string()
+});
+
+// Document Schemas
+export const createDocumentSchema = z.object({
+    orgID: z.string().nullable(),
+    publicAccess: z.nativeEnum(Access),
+    orgAccess: z.nativeEnum(Access),
+    title: z.string()
+});
+
+export const updateDocumentSchema = z.object({
+    orgID: z.string().nullable(),
+    publicAccess: z.nativeEnum(Access),
+    orgAccess: z.nativeEnum(Access),
+    title: z.string(),
+    text: z.string()
+});
+
+export const deleteDocumentSchema = z.object({
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
+});
+
+export const addAccessOverride = z.object({
+    email: z.string().email().toLowerCase(),
+    access: z.nativeEnum(Access)
+});
+
+export const removeAccessOverride = z.object({
+    email: z.string().email().toLowerCase(),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
+});
+
+export const updateAccessOverride = z.object({
+    email: z.string().email().toLowerCase(),
+    access: z.nativeEnum(Access),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
