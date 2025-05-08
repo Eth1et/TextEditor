@@ -107,8 +107,8 @@ export const configureUserRoutes = (router: Router): Router => {
         //? verify email
 
         try {
-            const user = await User.create({ email: email, passwordHash: password });
-
+            await User.create({ email: email, passwordHash: password });
+            
             login(req, res, _next, REGISTER_SUCCESS, 201);
         }
         catch (err: any) {

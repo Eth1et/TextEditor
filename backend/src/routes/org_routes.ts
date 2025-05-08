@@ -44,16 +44,13 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            const org = new Org({ name, description });
-            const savedOrg = await org.save();
+            const org = await Org.create({ name, description });
 
-            const orgMember = new OrgMembership({
+            await OrgMembership.create({
                 userID: req.user,
-                orgID: savedOrg._id,
+                orgID: org._id,
                 admin: true
             });
-
-            await orgMember.save();
             res.status(200).send(ORG_CREATED_SUCCESS);
         }
         catch (err) {
@@ -208,13 +205,11 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            const orgMember = new OrgMembership({
+            await OrgMembership.create({
                 userID: user._id,
                 orgID: orgID,
                 admin: admin
             });
-            await orgMember.save();
-
             res.status(200).send(MEMBER_ADD_SUCCESS);
         }
         catch (err) {
@@ -280,7 +275,7 @@ export const configureOrgRoutes = (router: Router): Router => {
 
     router.post('/update-member', validate(updateMemberSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
-        
+
         const { password, orgID, admin, email } = updateMemberSchema.parse(req.body);
 
         try {

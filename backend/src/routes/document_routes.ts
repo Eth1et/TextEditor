@@ -1,6 +1,6 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
-import { TOO_MANY_REQUESTS_ERR, NOT_LOGGED_IN_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, REGISTER_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS } from "../consts/msgs";
+import { TOO_MANY_REQUESTS_ERR, NOT_LOGGED_IN_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, REGISTER_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS, ACCESS_OVERRIDE_ALREADY_EXIST_ERR } from "../consts/msgs";
 import { addAccessOverride, deleteDocumentSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride, validate } from "./route_schemas";
 import type { Types } from 'mongoose';
 import { Org } from "../model/organization";
@@ -183,11 +183,7 @@ export const configureOrgRoutes = (router: Router): Router => {
             await doc.save();
 
             // success
-            if (isNew) {
-                res.status(201).send(DOC_SAVE_SUCCESS);
-            } else {
-                res.status(200).send(DOC_SAVE_SUCCESS);
-            }
+            res.status(isNew ? 201 : 200).send(DOC_SAVE_SUCCESS);
         }
         catch (err) {
             res.status(500).send(INTERNAL_ERR);
@@ -268,12 +264,17 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            const override = await AccessOverride.create({
+            const addedOverride = await AccessOverride.findOne({ docID: docID, userID: addedUser._id })
+            if (addedOverride) {
+                res.status(404).send(ACCESS_OVERRIDE_ALREADY_EXIST_ERR);
+                return;
+            }
+
+            await AccessOverride.create({
                 docID: docID,
                 userID: addedUser._id,
                 access: access
             });
-            await override.save();
             res.status(201).send(ACCESS_OVERRIDE_SUCCESS);
         }
         catch (error) {
@@ -379,7 +380,7 @@ export const configureOrgRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/remove-access-override', validate(queryAccessOverride), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.post('/query-access-overrides', validate(queryAccessOverride), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         try {
