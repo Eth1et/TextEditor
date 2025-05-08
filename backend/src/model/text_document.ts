@@ -1,4 +1,4 @@
-import { Schema, Model, Document, Types } from 'mongoose';
+import { Schema, Model, Document, Types, InferSchemaType ,} from 'mongoose';
 import mongoose from 'mongoose';
 import { Access } from './access';
 
@@ -21,8 +21,8 @@ const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
     creator: { type: Schema.Types.ObjectId, required: true },
     orgID: { type: Schema.Types.ObjectId, required: true },
 
-    publicAccess: { type: String, required: true, enum: Object.values(Access), default: Access.None },
-    orgAccess: { type: String, required: true, enum: Object.values(Access), default: Access.None },
+    publicAccess: { type: Number, required: true, enum: Object.values(Access), default: Access.None },
+    orgAccess: { type: Number, required: true, enum: Object.values(Access), default: Access.None },
 
     title: { type: String },
     text: { type: String },
@@ -30,13 +30,11 @@ const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
     timestamps: true,
     toJSON: {
         transform(_doc, ret) {
-            delete ret._id;
             delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
             return ret;
         },
     },
 });
 
+export type TextDocumentType = InferSchemaType<typeof TextDocumentSchema>;
 export const TextDocument: Model<ITextDocument> = mongoose.model<ITextDocument>('TextDocument', TextDocumentSchema);

@@ -16,10 +16,7 @@ const OrgSchema: Schema<IOrg> = new mongoose.Schema({
     timestamps: true,
     toJSON: {
         transform(_doc, ret) {
-            delete ret._id;
             delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
             return ret;
         },
     },

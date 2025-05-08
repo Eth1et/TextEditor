@@ -15,7 +15,7 @@ export interface IAccessOverride extends Document {
 const AccessOverrideSchema: Schema<IAccessOverride> = new mongoose.Schema({
     userID: { type: Schema.Types.ObjectId, required: true },
     docID: { type: Schema.Types.ObjectId, required: true },
-    access: { type: String, required: true, enum: Object.values(Access), default: Access.None }
+    access: { type: Number, required: true, enum: Object.values(Access), default: Access.None }
 }, {
     timestamps: true,
     toJSON: {

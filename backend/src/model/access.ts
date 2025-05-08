@@ -1,5 +1,5 @@
 export enum Access {
-    Editor = 'editor',
-    Viewer = 'viewer',
-    None = 'none'
+    Editor = 2,
+    Viewer = 1,
+    None = 0
 }

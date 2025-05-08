@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { Schema, Model, Document, Types } from 'mongoose';
+import { Schema, Model, Document, Types, InferSchemaType } from 'mongoose';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import { SALT_FACTOR } from '../consts/constants';
@@ -12,13 +12,13 @@ export interface IUser extends Document, Express.User {
     updatedAt: Date;
 
     comparePassword: (
-        candidatePassword: string, 
+        candidatePassword: string,
         callback: (error: Error | null, isMatch: boolean) => void
     ) => void;
 }
 
 const UserSchema: Schema<IUser> = new mongoose.Schema({
-    email: { type: String, required: true, unique: true, index: true, lowercase: true},
+    email: { type: String, required: true, unique: true, index: true, lowercase: true },
     passwordHash: { type: String, required: true },
 }, {
     timestamps: true,
@@ -27,7 +27,6 @@ const UserSchema: Schema<IUser> = new mongoose.Schema({
             delete ret.passwordHash;
             delete ret._id;
             delete ret.__v;
-            delete ret.createdAt;
             delete ret.updatedAt;
             return ret;
         },
@@ -50,8 +49,8 @@ UserSchema.pre<IUser>('save', function (next) {
     })
 });
 
-UserSchema.methods.comparePassword = function(
-    candidatePassword: string, 
+UserSchema.methods.comparePassword = function (
+    candidatePassword: string,
     callback: (error: Error | null, isMatch: boolean) => void
 ) {
     const user = this;
@@ -59,8 +58,11 @@ UserSchema.methods.comparePassword = function(
         if (error) {
             callback(error, false);
         }
-        callback(null, isMatch);
+        else {
+            callback(null, isMatch);
+        }
     })
 };
 
+export type UserType = InferSchemaType<typeof UserSchema>;
 export const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);

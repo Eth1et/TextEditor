@@ -99,15 +99,13 @@ export const queryMembersSchema = z.object({
 });
 
 // Document Schemas
-export const createDocumentSchema = z.object({
-    orgID: z.string().nullable(),
-    publicAccess: z.nativeEnum(Access),
-    orgAccess: z.nativeEnum(Access),
-    title: z.string()
+export const searchDocumentsSchema = z.object({
+    filter: z.string().toLowerCase()
 });
 
-export const updateDocumentSchema = z.object({
-    orgID: z.string().nullable(),
+export const saveDocumentSchema = z.object({
+    docID: z.string().optional(),
+    orgID: z.string().optional(),
     publicAccess: z.nativeEnum(Access),
     orgAccess: z.nativeEnum(Access),
     title: z.string(),
@@ -115,21 +113,30 @@ export const updateDocumentSchema = z.object({
 });
 
 export const deleteDocumentSchema = z.object({
+    docID: z.string(),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
 
 export const addAccessOverride = z.object({
+    docID: z.string(),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     email: z.string().email().toLowerCase(),
     access: z.nativeEnum(Access)
 });
 
 export const removeAccessOverride = z.object({
+    docID: z.string(),
     email: z.string().email().toLowerCase(),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
 
 export const updateAccessOverride = z.object({
+    docID: z.string(),
     email: z.string().email().toLowerCase(),
     access: z.nativeEnum(Access),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
+});
+
+export const queryAccessOverride = z.object({
+    docID: z.string(),
 });

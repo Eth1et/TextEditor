@@ -12,7 +12,10 @@ export const
     ORG_UPDATED_SUCCESS = 'Successfully updated organization.',
     MEMBER_ADD_SUCCESS = 'Successfully added member.',
     MEMBER_REMOVED_SUCCESS = 'Successfully removed member.',
-    MEMBER_UPDATE_SUCCESS = 'Successfully updated membership details.';
+    MEMBER_UPDATE_SUCCESS = 'Successfully updated membership details.',
+    DOC_SAVE_SUCCESS = 'Successfully saved document.',
+    DOC_DELETE_SUCCESS = 'Succesfully deleted document.',
+    ACCESS_OVERRIDE_SUCCESS = 'Successful access override.';
 
 
 // Error
@@ -34,4 +37,9 @@ export const
     NO_USER_WITH_GIVEN_EMAIL_ERR = 'There is no user with the given email.',
     USER_ALREADY_MEMBER_ERR = 'The user is already a member of the organization.',
     CANNOT_REMOVE_SELF_ERR = 'You cannot remove yourself from an organization, delete it!',
-    CANNOT_UPDATE_SELF_MEMBERSHIP_ERR = 'You cannot change your own membership!';
+    CANNOT_UPDATE_SELF_MEMBERSHIP_ERR = 'You cannot change your own membership!',
+    NO_SUCH_DOCUMENT_ERR = 'There is no such document, cannot save it!',
+    MUST_BE_CREATOR_ERR = 'Only the creator can perform this action!',
+    ORG_DOESNT_EXIST_ERR = 'Organization does not exist.',
+    INSUFFICIENT_ACCESS_ERR = 'You do not have the permission.',
+    ACCESS_OVERRIDE_DOESNT_EXIST_ERR = 'The access ovveride doesn\'exists.';
