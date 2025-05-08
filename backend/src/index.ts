@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 import MongoStore from 'connect-mongo';
+import cors from 'cors';
 import { Request, Response, NextFunction } from 'express';
 import { configureRoutes } from './routes';
 import { configurePassport } from './passport';
@@ -19,6 +20,11 @@ const app = express();
 const url = process.env.URL || 'http://localhost'
 const port = process.env.PORT || 3000;
 const dbURL = process.env.DB_URL || 'mongodb://localhost:27017/db'
+
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+    credentials: true
+}));
 
 // DB Connect
 mongoose.connect(dbURL).then((_) => {
