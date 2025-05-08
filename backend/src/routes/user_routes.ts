@@ -18,7 +18,8 @@ import {
     PASSWORD_UPDATE_SUCCESS,
     ACCOUNT_DELETE_SUCCESS,
 } from "../consts/msgs";
-import { deleteUserSchema, loginSchema, registerSchema, updatePasswordSchema, validate } from "./route_schemas";
+import { deleteUserSchema, loginSchema, registerSchema, updatePasswordSchema } from "../shared/route_schemas";
+import { validate } from ".";
 
 
 export function ensureNotAuthenticated(req: Request, res: Response): Boolean {
@@ -47,7 +48,7 @@ export function comparePasswordAsync(user: UserType, inputPassword: string): Pro
 }
 
 export const login = function (req: Request, res: Response, _next: NextFunction, successMsg: string, successCode: number = 200) {
-    passport.authenticate('local', (error: string | null, user: typeof User) => {
+    passport.authenticate('local', (error: string | null, user: string) => {
         if (error) {
             res.status(500).send(error);
             return;
@@ -80,15 +81,29 @@ export const logout = function (req: Request, res: Response, _next: NextFunction
 }
 
 export const configureUserRoutes = (router: Router): Router => {
+    const authLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 2000,
+        message: TOO_MANY_REQUESTS_ERR
+    });
+
+    router.get('/auth-check', authLimiter, (req: Request, res: Response) => {
+        if (req.user) {
+            res.sendStatus(200);
+        }
+        else {
+            res.sendStatus(401);
+        }
+    });
 
     const limiter = rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 10,
+        max: 100,
         message: TOO_MANY_REQUESTS_ERR
     });
 
     router.post('/login', validate(loginSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
-        if (!ensureNotAuthenticated(req,res)) return;
+        if (!ensureNotAuthenticated(req, res)) return;
 
         login(req, res, _next, LOGIN_SUCCESS);
     });
@@ -100,7 +115,7 @@ export const configureUserRoutes = (router: Router): Router => {
     });
 
     router.post('/register', validate(registerSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
-        if (!ensureNotAuthenticated(req,res)) return;
+        if (!ensureNotAuthenticated(req, res)) return;
 
         const { email, password } = registerSchema.parse(req.body);
 
@@ -108,7 +123,7 @@ export const configureUserRoutes = (router: Router): Router => {
 
         try {
             await User.create({ email: email, passwordHash: password });
-            
+
             login(req, res, _next, REGISTER_SUCCESS, 201);
         }
         catch (err: any) {
@@ -120,7 +135,7 @@ export const configureUserRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/update-password', validate(updatePasswordSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.patch('/update-password', validate(updatePasswordSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         const body = updatePasswordSchema.parse(req.body);

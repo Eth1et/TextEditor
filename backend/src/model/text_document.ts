@@ -1,6 +1,6 @@
 import { Schema, Model, Document, Types, InferSchemaType ,} from 'mongoose';
 import mongoose from 'mongoose';
-import { Access } from './access';
+import { Access } from '../shared/access';
 
 export interface ITextDocument extends Document {
     _id: Types.ObjectId;

@@ -1,6 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
-import { ZodSchema } from 'zod';
-import { INVALID_REQUEST_ERR, PASSWORDS_DONT_MATCH_ERR } from '../consts/msgs';
 import { z } from 'zod';
 import {
     MIN_PASSWORD_LENGTH,
@@ -8,22 +5,8 @@ import {
     MIN_ORG_NAME_LENGTH,
     MAX_ORG_NAME_LENGTH,
     MAX_ORG_DESC_LENGTH
-} from '../consts/constants';
-import { Access } from '../model/access';
-
-export const validate =
-    (schema: ZodSchema) =>
-        (req: Request, res: Response, next: NextFunction) => {
-            const result = schema.safeParse(req.body);
-
-            if (!result.success) {
-                res.status(400).send(INVALID_REQUEST_ERR);
-                return;
-            }
-
-            req.body = result.data;
-            next();
-        };
+} from './constants';
+import { Access } from './access';
 
 // User Schemas
 export const updatePasswordSchema = z.object({
@@ -31,7 +14,7 @@ export const updatePasswordSchema = z.object({
     oldRePassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     newPassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 }).refine(data => data.oldPassword === data.oldRePassword, {
-    message: PASSWORDS_DONT_MATCH_ERR,
+    message: "Passwords do not match!",
     path: ["oldRePassword"],
 });
 
@@ -45,7 +28,7 @@ export const registerSchema = z.object({
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     rePassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 }).refine(data => data.password === data.rePassword, {
-    message: PASSWORDS_DONT_MATCH_ERR,
+    message: "Passwords do not match!",
     path: ["rePassword"],
 });
 
@@ -53,7 +36,7 @@ export const deleteUserSchema = z.object({
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     rePassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 }).refine(data => data.password === data.rePassword, {
-    message: PASSWORDS_DONT_MATCH_ERR,
+    message: "Passwords do not match!",
     path: ["rePassword"],
 });
 

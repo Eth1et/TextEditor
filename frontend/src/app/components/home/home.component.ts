@@ -4,7 +4,6 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
-  AbstractControl,
 } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -13,7 +12,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { environment } from '../../environments/environment';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@shared/constants';
+import { UserService } from 'src/app/services/backend/user.service';
+import { ToastService } from 'src/app/services/helper/toast.service';
+import { LoadingButtonComponent } from "../reusable/loading-button.component";
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -26,26 +29,29 @@ import { environment } from '../../environments/environment';
     MatInputModule,
     MatButtonModule,
     MatCardModule,
-  ],
+    LoadingButtonComponent
+],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
-  readonly minPass = environment.MIN_PASSWORD_LENGTH;
-  readonly maxPass = environment.MAX_PASSWORD_LENGTH;
-
   loginForm: FormGroup;
   registerForm: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private userService: UserService,
+    private toast: ToastService,
+    private router: Router
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: [
         '',
         [
           Validators.required,
-          Validators.minLength(this.minPass),
-          Validators.maxLength(this.maxPass),
+          Validators.minLength(MIN_PASSWORD_LENGTH),
+          Validators.maxLength(MAX_PASSWORD_LENGTH),
         ],
       ],
     });
@@ -57,8 +63,8 @@ export class HomeComponent {
           '',
           [
             Validators.required,
-            Validators.minLength(this.minPass),
-            Validators.maxLength(this.maxPass),
+            Validators.minLength(MIN_PASSWORD_LENGTH),
+            Validators.maxLength(MAX_PASSWORD_LENGTH),
           ],
         ],
         rePassword: ['', [Validators.required]],
@@ -86,7 +92,7 @@ export class HomeComponent {
 
   getControlErrors(form: FormGroup, name: string): string[] {
     const ctrl = form.get(name);
-    
+
     if (!ctrl || !ctrl.errors) return [];
 
     const errs = [];
@@ -112,15 +118,37 @@ export class HomeComponent {
     return errs;
   }
 
+  loginAction = async () => this.onLogin();
+
   onLogin() {
     if (this.loginForm.valid) {
-      console.log('Logging in with', this.loginForm.value);
+      this.userService.login(this.loginForm.value).subscribe({
+        next: (response) => {
+          this.toast.showSuccess(response);
+          this.loginForm.reset();
+          this.router.navigateByUrl("documents");
+        },
+        error: (error) => {
+          this.toast.showError(error);
+        },
+      });
     }
   }
 
+  registerAction = async () => this.onRegister();
+
   onRegister() {
     if (this.registerForm.valid) {
-      console.log('Registering with', this.registerForm.value);
+      this.userService.register(this.registerForm.value).subscribe({
+        next: (response) => {
+          this.toast.showSuccess(response);
+          this.registerForm.reset();
+          this.router.navigateByUrl("documents");
+        },
+        error: (error) => {
+          this.toast.showError(error);
+        },
+      });
     }
   }
 }

@@ -1,9 +1,19 @@
-
-html, body { 
+html,
+body {
     width: 100%;
     height: 100%;
 }
-body { 
+body {
     margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif; 
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.snackbar-success > *  {
+    outline: 1px solid #4bb34f;
+    color: #fff;
+}
+
+.snackbar-error > * {
+    outline: 1px solid #f44336;
+    color: #fff;
 }

@@ -1,0 +1,15 @@
+#toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#app-name-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+#nav {
+    display: flex;
+    gap: 8px;
+}

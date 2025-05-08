@@ -1,7 +1,3 @@
 export const environment = {
-    MIN_PASSWORD_LENGTH: 5,
-    MAX_PASSWORD_LENGTH: 30,
-    MIN_ORG_NAME_LENGTH: 5,
-    MAX_ORG_NAME_LENGTH: 30,
-    MAX_ORG_DESC_LENGTH: 200,
+    SERVER_URL: "http://localhost:3000"
 }

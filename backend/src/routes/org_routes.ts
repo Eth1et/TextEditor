@@ -1,7 +1,8 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import { CANNOT_REMOVE_SELF_ERR, CANNOT_UPDATE_SELF_MEMBERSHIP_ERR, INCORRECT_PASSWORD_ERR, INTERNAL_ERR, MEMBER_ADD_SUCCESS, MEMBER_REMOVED_SUCCESS, MEMBER_UPDATE_SUCCESS, NO_ADMIN_PERMISSION_ON_ORG_ERR, NO_USER_WITH_GIVEN_EMAIL_ERR, NOT_LOGGED_IN_ERR, ORG_CREATED_SUCCESS, ORG_DELETD_SUCESS, ORG_DOESNT_EXIST_ERR, ORG_NAME_TAKEN_ERR, ORG_UPDATED_SUCCESS, SESSION_EXPIRED_ERR, TOO_MANY_REQUESTS_ERR, USER_ALREADY_MEMBER_ERR, USER_NOT_MEMBER_OF_ORG_ERR } from "../consts/msgs";
-import { validate, createOrgSchema, deleteOrgSchema, updateOrgSchema, addMemberSchema, removeMemberSchema, updateMemberSchema, queryMembersSchema } from "./route_schemas";
+import { createOrgSchema, deleteOrgSchema, updateOrgSchema, addMemberSchema, removeMemberSchema, updateMemberSchema, queryMembersSchema } from "../shared/route_schemas";
+import { validate } from ".";
 import { Org } from "../model/organization";
 import { OrgMembership } from "../model/org_membership";
 import { User } from "../model/user";

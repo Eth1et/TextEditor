@@ -1,7 +1,6 @@
 import { Schema, Model, Document, Types } from 'mongoose';
 import mongoose from 'mongoose';
-import { Access } from './access';
-import { z } from 'zod';
+import { Access } from '../shared/access';
 
 export interface IAccessOverride extends Document {
     _id: Types.ObjectId;

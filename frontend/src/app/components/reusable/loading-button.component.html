@@ -1,0 +1,50 @@
+<!-- Icon + Label -->
+<ng-container *ngIf="icon && label; else fallback">
+  <button
+    mat-raised-button
+    [color]="color"
+    [disabled]="disabled || (isLoading | async)"
+    (click)="onClick()"
+  >
+    <mat-spinner
+      *ngIf="isLoading | async"
+      diameter="20"
+      style="margin-right: 8px"
+    ></mat-spinner>
+    <mat-icon *ngIf="!(isLoading | async)" style="margin-right: 4px">{{
+      icon
+    }}</mat-icon>
+    {{ label }}
+  </button>
+</ng-container>
+
+<!-- Only icon or only label -->
+<ng-template #fallback>
+  <!-- Icon only -->
+  <button
+    *ngIf="icon && !label"
+    mat-icon-button
+    [color]="color"
+    [disabled]="disabled || (isLoading | async)"
+    (click)="onClick()"
+  >
+    <mat-spinner *ngIf="isLoading | async" diameter="20"></mat-spinner>
+    <mat-icon *ngIf="!(isLoading | async)">{{ icon }}</mat-icon>
+  </button>
+
+  <!-- Label only -->
+  <button
+    *ngIf="label && !icon"
+    mat-raised-button
+    [color]="color"
+    [disabled]="disabled || (isLoading | async)"
+    (click)="onClick()"
+  >
+    <mat-spinner
+      *ngIf="isLoading | async"
+      diameter="20"
+      style="margin-right: 8px"
+    ></mat-spinner>
+    {{ label }}
+  </button>
+</ng-template>

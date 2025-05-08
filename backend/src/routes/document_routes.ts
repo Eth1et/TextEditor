@@ -1,12 +1,13 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
-import { TOO_MANY_REQUESTS_ERR, NOT_LOGGED_IN_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, REGISTER_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS, ACCESS_OVERRIDE_ALREADY_EXIST_ERR } from "../consts/msgs";
-import { addAccessOverride, deleteDocumentSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride, validate } from "./route_schemas";
+import { TOO_MANY_REQUESTS_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS, ACCESS_OVERRIDE_ALREADY_EXIST_ERR } from "../consts/msgs";
+import { addAccessOverride, deleteDocumentSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride } from "../shared/route_schemas";
+import { validate } from ".";
 import type { Types } from 'mongoose';
 import { Org } from "../model/organization";
 import { OrgMembership } from "../model/org_membership";
 import { User } from "../model/user";
-import { Access } from "../model/access";
+import { Access } from "../shared/access";
 import { AccessOverride } from "../model/access_override";
 import { TextDocument, TextDocumentType } from "../model/text_document";
 import { comparePasswordAsync, ensureAuthenticated, logout } from "./user_routes";
@@ -43,7 +44,7 @@ export function escapeText(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export const configureOrgRoutes = (router: Router): Router => {
+export const configureDocumentRoutes = (router: Router): Router => {
     const limiter = rateLimit({
         windowMs: 15 * 60 * 1000,
         max: 200,
