@@ -12,7 +12,7 @@ import { comparePasswordAsync, ensureAuthenticated, logout } from "./user_routes
 export const configureOrgRoutes = (router: Router): Router => {
     const limiter = rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 30,
+        max: 400,
         message: TOO_MANY_REQUESTS_ERR
     });
 

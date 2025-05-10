@@ -47,7 +47,7 @@ export function escapeText(str: string): string {
 export const configureDocumentRoutes = (router: Router): Router => {
     const limiter = rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 200,
+        max: 2000,
         message: TOO_MANY_REQUESTS_ERR
     });
 

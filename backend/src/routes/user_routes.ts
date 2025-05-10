@@ -83,7 +83,7 @@ export const logout = function (req: Request, res: Response, _next: NextFunction
 export const configureUserRoutes = (router: Router): Router => {
     const authLimiter = rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 2000,
+        max: 4000,
         message: TOO_MANY_REQUESTS_ERR
     });
 
@@ -98,7 +98,7 @@ export const configureUserRoutes = (router: Router): Router => {
 
     const limiter = rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 100,
+        max: 200,
         message: TOO_MANY_REQUESTS_ERR
     });
 
