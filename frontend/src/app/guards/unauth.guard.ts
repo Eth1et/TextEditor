@@ -13,15 +13,14 @@ export class UnauthGuard implements CanActivate {
     private router = inject(Router);
     private userService = inject(UserService);
 
-    canActivate(): Observable<boolean | UrlTree> {
-        return this.userService.isLoggedIn().pipe(
-            map(loggedIn =>
-                loggedIn
-                    ? this.router.createUrlTree(['documents'])
-                    : true
-            ),
-
-            catchError(() => of(true))
-        );
+    async canActivate(): Promise<boolean | UrlTree> {
+        try {
+            const isLoggedIn = await this.userService.isLoggedIn();
+            if (isLoggedIn) return this.router.createUrlTree(['documents']);
+            return true;
+        } catch (error) {
+            console.log(error)
+            return true;
+        }
     }
 }

@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Router, RouterOutlet } from '@angular/router';
-import { Observable } from 'rxjs';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { UserService } from '../services/backend/user.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ToastService } from '../services/helper/toast.service';
 import { LoadingButtonComponent } from "./reusable/loading-button.component";
+import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -18,19 +18,44 @@ import { LoadingButtonComponent } from "./reusable/loading-button.component";
     MatButtonModule,
     MatIconModule,
     LoadingButtonComponent
-],
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  public isLoggedIn: Observable<boolean>;
+  public isLoggedIn: boolean = false;
+  private routeSub: Subscription | null = null;
 
   constructor(
     private userService: UserService,
     private router: Router,
     private toast: ToastService
   ) {
-    this.isLoggedIn = this.userService.isLoggedIn();
+    this.isLoggedIn = false;
+  }
+
+  async ngOnInit() {
+    await this.setLoggedIn();
+
+    this.routeSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(async () => {
+        await this.setLoggedIn();
+      });
+  }
+
+  ngOnDestroy() {
+    this.routeSub?.unsubscribe();
+  }
+
+  async setLoggedIn() {
+    try {
+      this.isLoggedIn = await this.userService.isLoggedIn();
+    }
+    catch (error) {
+      console.log(error);
+      this.isLoggedIn = false;
+    }
   }
 
   gotoDocuments = async () => await this.navigateTo("documents");
@@ -43,10 +68,7 @@ export class AppComponent {
       if (!result) {
         this.toast.showError("Couldn't navigate to " + url);
       }
-      else {
-        this.router.navigateByUrl(url);
-      }
-    } 
+    }
     catch (error) {
       this.toast.showError(error);
     }
@@ -59,14 +81,13 @@ export class AppComponent {
   logoutAction = async () => await this.logout();
 
   async logout() {
-    this.userService.logout().subscribe({
-      next: (response) => {
-        this.toast.showSuccess(response);
-        this.router.navigateByUrl("login");
-      },
-      error: (error) => {
-        this.toast.showError(error);
-      },
-    });
+    try {
+      const response = await this.userService.logout();
+      this.toast.showSuccess(response);
+      this.router.navigateByUrl("login");
+    }
+    catch (error) {
+      this.toast.showError(error);
+    }
   }
 }

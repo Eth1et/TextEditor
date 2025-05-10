@@ -1,4 +1,4 @@
-<ng-container *ngIf="isLoggedIn | async; else onlyContent">
+<ng-container *ngIf="isLoggedIn; else onlyContent">
   <mat-toolbar id="toolbar">
     <span id="app-name-wrapper">
       <h1 id="app-name">TextEdit</h1>
@@ -10,26 +10,22 @@
         [color]="isActive('documents')? 'primary': undefined"
         [disabled]="isActive('documents')"
         icon="description"
-        loaderName="navigate-documents"
       ></app-loading-button>
       <app-loading-button
         [clickAction]="gotoProfile"
         [color]="isActive('profile')? 'primary': undefined"
         [disabled]="isActive('profile')"
         icon="person"
-        loaderName="navigate-profile"
       ></app-loading-button>
       <app-loading-button
         [clickAction]="gotoOrgs"
         [color]="isActive('orgs')? 'primary': undefined"
         [disabled]="isActive('orgs')"
         icon="apartment"
-        loaderName="navigate-orgs"
       ></app-loading-button>
       <app-loading-button
         [clickAction]="logoutAction"
         icon="logout"
-        loaderName="logout"
       ></app-loading-button>
     </span>
   </mat-toolbar>

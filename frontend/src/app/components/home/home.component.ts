@@ -30,7 +30,7 @@ import { Router } from '@angular/router';
     MatButtonModule,
     MatCardModule,
     LoadingButtonComponent
-],
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -118,37 +118,35 @@ export class HomeComponent {
     return errs;
   }
 
-  loginAction = async () => this.onLogin();
-
-  onLogin() {
-    if (this.loginForm.valid) {
-      this.userService.login(this.loginForm.value).subscribe({
-        next: (response) => {
+  async onLogin() {
+    if (this.loginForm && this.loginForm.valid) {
+      try {
+        const response = await this.userService.login(this.loginForm.value);
+        this.loginForm.reset();
+        const result = await this.router.navigateByUrl("documents");
+        if (result) {
           this.toast.showSuccess(response);
-          this.loginForm.reset();
-          this.router.navigateByUrl("documents");
-        },
-        error: (error) => {
-          this.toast.showError(error);
-        },
-      });
+        }
+      }
+      catch (error) {
+        this.toast.showError(error);
+      }
     }
   }
 
-  registerAction = async () => this.onRegister();
-
-  onRegister() {
-    if (this.registerForm.valid) {
-      this.userService.register(this.registerForm.value).subscribe({
-        next: (response) => {
+  async onRegister() {
+    if (this.registerForm && this.registerForm.valid) {
+      try {
+        const response = await this.userService.register(this.registerForm.value);
+        this.registerForm.reset();
+        const result = await this.router.navigateByUrl("documents");
+        if (result) {
           this.toast.showSuccess(response);
-          this.registerForm.reset();
-          this.router.navigateByUrl("documents");
-        },
-        error: (error) => {
-          this.toast.showError(error);
-        },
-      });
+        }
+      }
+      catch (error) {
+        this.toast.showError(error);
+      }
     }
   }
 }

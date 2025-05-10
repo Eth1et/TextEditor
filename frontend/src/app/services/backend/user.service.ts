@@ -2,10 +2,8 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-
+import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
-import { Observable, throwError, of, map } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 
 import {
   loginSchema,
@@ -34,87 +32,74 @@ export class UserService {
     const msg = err.error instanceof ErrorEvent
       ? `Network error: ${err.error.message}`
       : (typeof err.error === 'string' ? err.error : err.message || `Error ${err.status}`);
-    return throwError(() => new Error(msg));
+    return new Error(msg);
   }
 
-  login(dto: LoginDto): Observable<string> {
+  async login(dto: LoginDto): Promise<string> {
     loginSchema.parse(dto);
-    return this.http
-      .post(
+    return await firstValueFrom(
+      this.http.post(
         `${this.API}/login`,
         dto,
         { withCredentials: true, responseType: 'text' }
       )
-      .pipe(
-        catchError(err => this.handleError(err))
-      );
+    ).catch(err => Promise.reject(this.handleError(err)));
   }
 
-  logout(): Observable<string> {
-    return this.http
-      .post(
+  async logout(): Promise<string> {
+    return await firstValueFrom(
+      this.http.post(
         `${this.API}/logout`,
-        {}, // empty body
-        {
-          responseType: 'text',
-          withCredentials: true
-        }
+        {},
+        { withCredentials: true, responseType: 'text' }
       )
-      .pipe(catchError(err => this.handleError(err)));
+    ).catch(err => Promise.reject(this.handleError(err)));
   }
 
-  register(dto: RegisterDto): Observable<string> {
+  async register(dto: RegisterDto): Promise<string> {
     registerSchema.parse(dto);
-    return this.http
-      .post<string>(
+    return await firstValueFrom(
+      this.http.post<string>(
         `${this.API}/register`,
         dto,
         { withCredentials: true }
       )
-      .pipe(
-        catchError(err => this.handleError(err))
-      );
+    ).catch(err => Promise.reject(this.handleError(err)));
   }
 
-  updatePassword(dto: UpdatePasswordDto): Observable<string> {
+  async updatePassword(dto: UpdatePasswordDto): Promise<string> {
     updatePasswordSchema.parse(dto);
-    return this.http
-      .patch(
+    return await firstValueFrom(
+      this.http.patch(
         `${this.API}/update-password`,
         dto,
-        {
-          responseType: 'text',
-          withCredentials: true
-        }
+        { withCredentials: true, responseType: 'text' }
       )
-      .pipe(
-        catchError(err => this.handleError(err))
-      );
+    ).catch(err => Promise.reject(this.handleError(err)));
   }
 
-  deleteUser(dto: DeleteUserDto): Observable<string> {
+  async deleteUser(dto: DeleteUserDto): Promise<string> {
     deleteUserSchema.parse(dto);
-    return this.http
-      .request(
+    return await firstValueFrom(
+      this.http.request(
         'delete',
         `${this.API}/delete-user`,
-        {
-          body: dto,
-          responseType: 'text',
-          withCredentials: true
-        }
+        { body: dto, withCredentials: true, responseType: 'text' }
       )
-      .pipe(
-        catchError(err => this.handleError(err))
-      );
+    ).catch(err => Promise.reject(this.handleError(err)));
   }
 
-  isLoggedIn(): Observable<boolean> {
-    return this.http
-      .get(`${this.API}/auth-check`, { withCredentials: true, responseType: 'text'})
-      .pipe(
-        map(() => true),
-        catchError(() => of(false))
+  async isLoggedIn(): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.get(
+          `${this.API}/auth-check`,
+          { withCredentials: true, responseType: 'text' }
+        )
       );
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

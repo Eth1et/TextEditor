@@ -4,8 +4,6 @@ import {
     Router,
     UrlTree,
 } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
 import { UserService } from '../services/backend/user.service';
 
 @Injectable({
@@ -15,10 +13,14 @@ export class AuthGuard implements CanActivate {
     private userService = inject(UserService);
     private router = inject(Router);
 
-    canActivate(): Observable<boolean | UrlTree> {
-        return this.userService.isLoggedIn().pipe(
-            map(() => true),
-            catchError(() => of(this.router.createUrlTree(['login'])))
-        );
+    async canActivate(): Promise<boolean | UrlTree> {
+        try {
+            const isLoggedIn = await this.userService.isLoggedIn();
+            if (isLoggedIn) return true;
+            return this.router.createUrlTree(['login']);
+        } catch (error) {
+            console.log(error)
+            return this.router.createUrlTree(['login']);
+        }
     }
 }

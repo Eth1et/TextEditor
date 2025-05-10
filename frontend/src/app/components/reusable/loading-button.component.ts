@@ -3,9 +3,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { LoadingService } from 'src/app/services/helper/loading.service';
-import { OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
 
 @Component({
   imports: [
@@ -22,28 +19,31 @@ export class LoadingButtonComponent {
   @Input() label?: string;
   @Input() icon?: string;
   @Input() disabled?: boolean;
+  @Input() type?: string;
   @Input() color: 'primary' | 'accent' | 'warn' | undefined = 'primary';
-  @Input() loaderName!: string;
   @Input() clickAction!: () => Promise<any>;;
+  @Input() reuseDelay: number = 0.5;
 
-  isLoading!: Observable<boolean>;
+  lastClickedAt = 0;
+  isLoading: boolean = false;
 
-  constructor(private loading: LoadingService) {
-
-  }
-
-  ngOnInit() {
-    this.isLoading = this.loading.isThisLoading$(this.loaderName);
+  constructor() {
+    this.lastClickedAt = 0;
   }
 
   async onClick() {
-    const started = this.loading.startLoading(this.loaderName);
-    if (!started) return;
+    if (this.isLoading) return;
+
+    const now = Date.now();
+    if (now - this.lastClickedAt < this.reuseDelay * 1000) return;
+
+    this.lastClickedAt = now;
+    this.isLoading = true;
 
     try {
       await this.clickAction();
     } finally {
-      this.loading.stopLoading(this.loaderName);
+      this.isLoading = false;
     }
   }
 }

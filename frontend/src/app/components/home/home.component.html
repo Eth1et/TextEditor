@@ -97,8 +97,7 @@
             color="primary"
             type="submit"
             [disabled]="loginForm.invalid"
-            [clickAction]="loginAction"
-            loaderName="login"
+            [clickAction]="onLogin"
             label="Login"
           ></app-loading-button>
         </form>
@@ -144,8 +143,7 @@
             color="primary"
             type="submit"
             [disabled]="registerForm.invalid"
-            [clickAction]="registerAction"
-            loaderName="register"
+            [clickAction]="onRegister"
             label="Register"
           ></app-loading-button>
         </form>

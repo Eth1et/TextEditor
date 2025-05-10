@@ -2,18 +2,17 @@
 <ng-container *ngIf="icon && label; else fallback">
   <button
     mat-raised-button
+    [type]="type"
     [color]="color"
-    [disabled]="disabled || (isLoading | async)"
+    [disabled]="disabled || isLoading"
     (click)="onClick()"
   >
     <mat-spinner
-      *ngIf="isLoading | async"
+      *ngIf="isLoading"
       diameter="20"
       style="margin-right: 8px"
     ></mat-spinner>
-    <mat-icon *ngIf="!(isLoading | async)" style="margin-right: 4px">{{
-      icon
-    }}</mat-icon>
+    <mat-icon *ngIf="!isLoading" style="margin-right: 4px">{{ icon }}</mat-icon>
     {{ label }}
   </button>
 </ng-container>
@@ -23,25 +22,27 @@
   <!-- Icon only -->
   <button
     *ngIf="icon && !label"
+    [type]="type"
     mat-icon-button
     [color]="color"
-    [disabled]="disabled || (isLoading | async)"
+    [disabled]="disabled || isLoading"
     (click)="onClick()"
   >
-    <mat-spinner *ngIf="isLoading | async" diameter="20"></mat-spinner>
-    <mat-icon *ngIf="!(isLoading | async)">{{ icon }}</mat-icon>
+    <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+    <mat-icon *ngIf="!isLoading">{{ icon }}</mat-icon>
   </button>
 
   <!-- Label only -->
   <button
     *ngIf="label && !icon"
+    [type]="type"
     mat-raised-button
     [color]="color"
-    [disabled]="disabled || (isLoading | async)"
+    [disabled]="disabled || isLoading"
     (click)="onClick()"
   >
     <mat-spinner
-      *ngIf="isLoading | async"
+      *ngIf="isLoading"
       diameter="20"
       style="margin-right: 8px"
     ></mat-spinner>
