@@ -58,9 +58,9 @@ export class AppComponent {
     }
   }
 
-  gotoDocuments = async () => await this.navigateTo("documents");
-  gotoOrgs = async () => await this.navigateTo("orgs");
-  gotoProfile = async () => await this.navigateTo("profile");
+  gotoDocuments = async () => {await this.navigateTo("documents")};
+  gotoOrgs = async () => {await this.navigateTo("orgs")};
+  gotoProfile = async () => {await this.navigateTo("profile")};
 
   async navigateTo(url: string) {
     try {

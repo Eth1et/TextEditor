@@ -1,1 +1,45 @@
-<p>document-search works!</p>
+<div class="everything">
+  <div class="toolbar">
+    <mat-form-field appearance="outline" id="searchbar">
+      <input id="search-input" matInput placeholder="Search documents" [(ngModel)]="searchTerm" />
+    </mat-form-field>
+    <app-loading-button
+      [clickAction]="search"
+      label="Search"
+      icon="search"
+    ></app-loading-button>
+    <app-loading-button
+      id="new-button"
+      [clickAction]="search"
+      [colorTheme]="'primary'"
+      label="New"
+      icon="add"
+    ></app-loading-button>
+  </div>
+
+  <mat-grid-list class="grid-container" cols="10" rowHeight="5:4">
+    <ng-container *ngIf="documents.length > 0; else noResult">
+      <mat-grid-tile *ngFor="let doc of documents" class="doc-tile">
+        <mat-card class="doc">
+          <div class="title-container">
+            <h3>{{ doc.title }}</h3>
+          </div>
+          <ng-container *ngIf="doc.orgName">
+            <div class="org-container">
+              <mat-icon>group</mat-icon>
+              <p>{{ doc.orgName }}</p>
+            </div>
+          </ng-container>
+          <div class="access">
+            <app-loading-button
+              [icon]="isEditor(doc.access) ? 'edit_note' : 'visibility'"
+            ></app-loading-button>
+          </div>
+        </mat-card>
+      </mat-grid-tile>
+    </ng-container>
+    <ng-template #noResult>
+      <h1>No results found!</h1>
+    </ng-template>
+  </mat-grid-list>
+</div>

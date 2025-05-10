@@ -3,14 +3,28 @@
     justify-content: space-between;
     align-items: center;
     position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid var(--mat-sys-primary);
+    background-color: #b1cff1;
 }
 
 #app-name-wrapper {
     display: flex;
     align-items: center;
 }
+#app-name {
+    font-weight: bold;
+    font-size: 2rem;
+    color: var(--mat-sys-primary);
+}
 
 #nav {
     display: flex;
     gap: 8px;
+}
+
+#content {
+    width: 100%;
+    height: 100%;
 }

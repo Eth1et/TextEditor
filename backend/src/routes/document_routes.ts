@@ -102,12 +102,11 @@ export const configureDocumentRoutes = (router: Router): Router => {
                     }
                 }
 
-                if (access !== Access.None) {
-                    out.push({
-                        access,
-                        ...doc,
-                        orgName: doc.orgID ? orgNameMap.get(doc.orgID.toString()) ?? null : null
-                    });
+                if (access >= Access.Viewer) {
+                    out.push(doc.toQueryResFormat(
+                        access, 
+                        doc.orgID ? orgNameMap.get(doc.orgID.toString()) ?? null : null
+                    ));
                 }
                 return out;
             }, [] as Array<Record<string, any>>);

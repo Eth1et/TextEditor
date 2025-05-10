@@ -7,25 +7,30 @@
     <span id="nav">
       <app-loading-button
         [clickAction]="gotoDocuments"
-        [color]="isActive('documents')? 'primary': undefined"
-        [disabled]="isActive('documents')"
+        colorTheme="primary"
+        [externalDisabled]="isActive('documents')"
         icon="description"
+        label="Docs"
       ></app-loading-button>
       <app-loading-button
         [clickAction]="gotoProfile"
-        [color]="isActive('profile')? 'primary': undefined"
-        [disabled]="isActive('profile')"
+        colorTheme="primary"
+        [externalDisabled]="isActive('profile')"
         icon="person"
+        label="Profile"
       ></app-loading-button>
       <app-loading-button
         [clickAction]="gotoOrgs"
-        [color]="isActive('orgs')? 'primary': undefined"
-        [disabled]="isActive('orgs')"
-        icon="apartment"
+        colorTheme="primary"
+        [externalDisabled]="isActive('orgs')"
+        icon="group"
+        label="Orgs"
       ></app-loading-button>
       <app-loading-button
         [clickAction]="logoutAction"
+        colorTheme="primary"
         icon="logout"
+        label="Logout"
       ></app-loading-button>
     </span>
   </mat-toolbar>

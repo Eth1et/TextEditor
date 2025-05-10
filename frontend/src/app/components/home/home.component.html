@@ -94,9 +94,9 @@
           </mat-form-field>
 
           <app-loading-button
-            color="primary"
-            type="submit"
-            [disabled]="loginForm.invalid"
+            colorTheme="primary"
+            buttonType="submit"
+            [externalDisabled]="loginForm.invalid"
             [clickAction]="onLogin"
             label="Login"
           ></app-loading-button>
@@ -140,9 +140,9 @@
           </mat-form-field>
 
           <app-loading-button
-            color="primary"
-            type="submit"
-            [disabled]="registerForm.invalid"
+            colorTheme="primary"
+            buttonType="submit"
+            [externalDisabled]="registerForm.invalid"
             [clickAction]="onRegister"
             label="Register"
           ></app-loading-button>

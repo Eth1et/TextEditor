@@ -1,10 +1,9 @@
-<!-- Icon + Label -->
-<ng-container *ngIf="icon && label; else fallback">
+<ng-container *ngIf="icon && label; else onlyIconOrLabel">
   <button
-    mat-raised-button
-    [type]="type"
-    [color]="color"
-    [disabled]="disabled || isLoading"
+    mat-fab extended
+    [type]="buttonType"
+    [color]="colorTheme"
+    [disabled]="disabled"
     (click)="onClick()"
   >
     <mat-spinner
@@ -17,28 +16,24 @@
   </button>
 </ng-container>
 
-<!-- Only icon or only label -->
-<ng-template #fallback>
-  <!-- Icon only -->
+<ng-template #onlyIconOrLabel>
   <button
     *ngIf="icon && !label"
-    [type]="type"
-    mat-icon-button
-    [color]="color"
-    [disabled]="disabled || isLoading"
+    mat-mini-fab
+    [color]="colorTheme"
+    [disabled]="disabled"
     (click)="onClick()"
   >
     <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
     <mat-icon *ngIf="!isLoading">{{ icon }}</mat-icon>
   </button>
 
-  <!-- Label only -->
   <button
     *ngIf="label && !icon"
-    [type]="type"
     mat-raised-button
-    [color]="color"
-    [disabled]="disabled || isLoading"
+    [type]="buttonType"
+    [color]="colorTheme"
+    [disabled]="disabled"
     (click)="onClick()"
   >
     <mat-spinner

@@ -1,6 +1,7 @@
-import { Schema, Model, Document, Types, InferSchemaType ,} from 'mongoose';
+import { Schema, Model, Document, Types, InferSchemaType, } from 'mongoose';
 import mongoose from 'mongoose';
 import { Access } from '../shared/access';
+import { QueriedDocument } from '../shared/response_models';
 
 export interface ITextDocument extends Document {
     _id: Types.ObjectId;
@@ -15,6 +16,8 @@ export interface ITextDocument extends Document {
 
     createdAt: Date;
     updatedAt: Date;
+
+    toQueryResFormat: (access: Access, orgName: string | null) => QueriedDocument;
 }
 
 const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
@@ -35,6 +38,19 @@ const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
         },
     },
 });
+
+TextDocumentSchema.methods.toQueryResFormat = function (access: Access, orgName: string | null) {
+    const doc: QueriedDocument = {
+        docID: this.docID,
+        access: access,
+        title: this.title,
+        orgName: orgName,
+        creator: this.creator,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt
+    }
+    return doc;
+}
 
 export type TextDocumentType = InferSchemaType<typeof TextDocumentSchema>;
 export const TextDocument: Model<ITextDocument> = mongoose.model<ITextDocument>('TextDocument', TextDocumentSchema);

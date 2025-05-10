@@ -1,5 +1,3 @@
-// src/app/services/user.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -19,6 +17,12 @@ export type RegisterDto = z.infer<typeof registerSchema>;
 export type UpdatePasswordDto = z.infer<typeof updatePasswordSchema>;
 export type DeleteUserDto = z.infer<typeof deleteUserSchema>;
 
+export function handleError(err: HttpErrorResponse) {
+  const msg = err.error instanceof ErrorEvent
+    ? `Network error: ${err.error.message}`
+    : (typeof err.error === 'string' ? err.error : err.message || `Error ${err.status}`);
+  return new Error(msg);
+}
 
 @Injectable({
   providedIn: 'root',
@@ -28,13 +32,6 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  private handleError(err: HttpErrorResponse) {
-    const msg = err.error instanceof ErrorEvent
-      ? `Network error: ${err.error.message}`
-      : (typeof err.error === 'string' ? err.error : err.message || `Error ${err.status}`);
-    return new Error(msg);
-  }
-
   async login(dto: LoginDto): Promise<string> {
     loginSchema.parse(dto);
     return await firstValueFrom(
@@ -43,7 +40,7 @@ export class UserService {
         dto,
         { withCredentials: true, responseType: 'text' }
       )
-    ).catch(err => Promise.reject(this.handleError(err)));
+    ).catch(err => Promise.reject(handleError(err)));
   }
 
   async logout(): Promise<string> {
@@ -53,18 +50,18 @@ export class UserService {
         {},
         { withCredentials: true, responseType: 'text' }
       )
-    ).catch(err => Promise.reject(this.handleError(err)));
+    ).catch(err => Promise.reject(handleError(err)));
   }
 
   async register(dto: RegisterDto): Promise<string> {
     registerSchema.parse(dto);
     return await firstValueFrom(
-      this.http.post<string>(
+      this.http.post(
         `${this.API}/register`,
         dto,
-        { withCredentials: true }
+        { withCredentials: true, responseType: 'text' }
       )
-    ).catch(err => Promise.reject(this.handleError(err)));
+    ).catch(err => Promise.reject(handleError(err)));
   }
 
   async updatePassword(dto: UpdatePasswordDto): Promise<string> {
@@ -75,7 +72,7 @@ export class UserService {
         dto,
         { withCredentials: true, responseType: 'text' }
       )
-    ).catch(err => Promise.reject(this.handleError(err)));
+    ).catch(err => Promise.reject(handleError(err)));
   }
 
   async deleteUser(dto: DeleteUserDto): Promise<string> {
@@ -86,7 +83,7 @@ export class UserService {
         `${this.API}/delete-user`,
         { body: dto, withCredentials: true, responseType: 'text' }
       )
-    ).catch(err => Promise.reject(this.handleError(err)));
+    ).catch(err => Promise.reject(handleError(err)));
   }
 
   async isLoggedIn(): Promise<boolean> {

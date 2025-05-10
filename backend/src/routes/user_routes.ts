@@ -98,11 +98,11 @@ export const configureUserRoutes = (router: Router): Router => {
 
     const limiter = rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 200,
+        max: 400,
         message: TOO_MANY_REQUESTS_ERR
     });
 
-    router.post('/login', validate(loginSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.post('/login', validate(loginSchema), async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureNotAuthenticated(req, res)) return;
 
         login(req, res, _next, LOGIN_SUCCESS);

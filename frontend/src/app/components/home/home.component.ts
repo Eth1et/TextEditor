@@ -122,7 +122,6 @@ export class HomeComponent {
     if (this.loginForm && this.loginForm.valid) {
       try {
         const response = await this.userService.login(this.loginForm.value);
-        this.loginForm.reset();
         const result = await this.router.navigateByUrl("documents");
         if (result) {
           this.toast.showSuccess(response);
@@ -138,7 +137,6 @@ export class HomeComponent {
     if (this.registerForm && this.registerForm.valid) {
       try {
         const response = await this.userService.register(this.registerForm.value);
-        this.registerForm.reset();
         const result = await this.router.navigateByUrl("documents");
         if (result) {
           this.toast.showSuccess(response);

@@ -18,27 +18,30 @@ import { CommonModule } from '@angular/common';
 export class LoadingButtonComponent {
   @Input() label?: string;
   @Input() icon?: string;
-  @Input() disabled?: boolean;
-  @Input() type?: string;
-  @Input() color: 'primary' | 'accent' | 'warn' | undefined = 'primary';
-  @Input() clickAction!: () => Promise<any>;;
-  @Input() reuseDelay: number = 0.5;
+  @Input() externalDisabled = false;
+  @Input() buttonType: 'button' | 'submit' | 'reset' = 'button';
+  @Input() colorTheme: 'primary' | 'accent' | 'warn' = 'primary';
+  @Input() clickAction!: () => Promise<any>;
+  @Input() reuseDelay = 0.5;
 
-  lastClickedAt = 0;
-  isLoading: boolean = false;
+  lastClick = 0;
+  isLoading = false;
 
-  constructor() {
-    this.lastClickedAt = 0;
+  constructor() { }
+
+  get disabled(): boolean {
+    return this.externalDisabled || this.isLoading;
   }
 
   async onClick() {
     if (this.isLoading) return;
 
     const now = Date.now();
-    if (now - this.lastClickedAt < this.reuseDelay * 1000) return;
+    if (now - this.lastClick < this.reuseDelay * 1000) return;
+    this.lastClick = now;
 
-    this.lastClickedAt = now;
     this.isLoading = true;
+    await Promise.resolve();
 
     try {
       await this.clickAction();
