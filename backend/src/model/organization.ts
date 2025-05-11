@@ -1,5 +1,6 @@
 import { Schema, Model, Document, Types } from 'mongoose';
 import mongoose from 'mongoose';
+import { QueriedOrg } from '../shared/response_models';
 
 export interface IOrg extends Document {
     _id: Types.ObjectId;
@@ -7,6 +8,7 @@ export interface IOrg extends Document {
     description: string;
     createdAt: Date;
     updatedAt: Date;
+    toQuriedOrg: () => QueriedOrg;
 }
 
 const OrgSchema: Schema<IOrg> = new mongoose.Schema({
@@ -21,5 +23,15 @@ const OrgSchema: Schema<IOrg> = new mongoose.Schema({
         },
     },
 });
+
+OrgSchema.methods.toQuriedOrg = function (): QueriedOrg {
+    return {
+        orgID: this._id,
+        name: this.name,
+        description: this.description,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt
+    };
+}
 
 export const Org: Model<IOrg> = mongoose.model<IOrg>('Org', OrgSchema);

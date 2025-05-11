@@ -78,9 +78,7 @@ export class AppComponent {
     return this.router.url === `/${route}`;
   }
 
-  logoutAction = async () => await this.logout();
-
-  async logout() {
+  logout = async () => {
     try {
       const response = await this.userService.logout();
       this.toast.showSuccess(response);

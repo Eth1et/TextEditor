@@ -70,7 +70,6 @@
       <mat-tab label="Login">
         <form
           [formGroup]="loginForm"
-          (ngSubmit)="onLogin()"
           class="form-container"
         >
           <mat-form-field appearance="fill">
@@ -95,7 +94,6 @@
 
           <app-loading-button
             colorTheme="primary"
-            buttonType="submit"
             [externalDisabled]="loginForm.invalid"
             [clickAction]="onLogin"
             label="Login"
@@ -106,7 +104,6 @@
       <mat-tab label="Register">
         <form
           [formGroup]="registerForm"
-          (ngSubmit)="onRegister()"
           class="form-container"
         >
           <mat-form-field appearance="fill">
@@ -141,7 +138,6 @@
 
           <app-loading-button
             colorTheme="primary"
-            buttonType="submit"
             [externalDisabled]="registerForm.invalid"
             [clickAction]="onRegister"
             label="Register"

@@ -1,7 +1,12 @@
 <div class="everything">
   <div class="toolbar">
     <mat-form-field appearance="outline" id="searchbar">
-      <input id="search-input" matInput placeholder="Search documents" [(ngModel)]="searchTerm" />
+      <input
+        id="search-input"
+        matInput
+        placeholder="Search documents"
+        [(ngModel)]="searchTerm"
+      />
     </mat-form-field>
     <app-loading-button
       [clickAction]="search"
@@ -10,7 +15,7 @@
     ></app-loading-button>
     <app-loading-button
       id="new-button"
-      [clickAction]="search"
+      [clickAction]="newDoc"
       [colorTheme]="'primary'"
       label="New"
       icon="add"
@@ -39,7 +44,67 @@
       </mat-grid-tile>
     </ng-container>
     <ng-template #noResult>
-      <h1>No results found!</h1>
+      <h1 class="no-results">No results found!</h1>
     </ng-template>
   </mat-grid-list>
+</div>
+
+<div *ngIf="newWindowOpen || true" id="new-doc-form-container">
+  <form [formGroup]="newDocForm" id="new-doc-form">
+    <h3>Create New Document</h3>
+    <mat-form-field appearance="fill">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" />
+      <mat-error *ngFor="let error of getControlErrors(newDocForm, 'title')">
+        {{ error }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Public Access</mat-label>
+      <mat-select formControlName="publicAccess">
+        <mat-option *ngFor="let access of accessOptions" [value]="access.value">
+          {{ access.label }}
+        </mat-option>
+      </mat-select>
+      <mat-error
+        *ngFor="let error of getControlErrors(newDocForm, 'publicAccess')"
+      >
+        {{ error }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Org</mat-label>
+      <mat-select formControlName="orgID">
+        <mat-option *ngFor="let org of orgOptions" [value]="org.orgID">
+          {{ org.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngFor="let error of getControlErrors(newDocForm, 'orgID')">
+        {{ error }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Org Access</mat-label>
+      <mat-select formControlName="orgAccess">
+        <mat-option *ngFor="let access of accessOptions" [value]="access.value">
+          {{ access.label }}
+        </mat-option>
+      </mat-select>
+      <mat-error
+        *ngFor="let error of getControlErrors(newDocForm, 'orgAccess')"
+      >
+        {{ error }}
+      </mat-error>
+    </mat-form-field>
+
+    <app-loading-button
+      label="Create"
+      icon="add"
+      [externalDisabled]="newDocForm.invalid"
+      [clickAction]="createDoc"
+    ></app-loading-button>
+  </form>
 </div>

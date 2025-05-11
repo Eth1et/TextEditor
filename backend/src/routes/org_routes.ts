@@ -26,7 +26,7 @@ export const configureOrgRoutes = (router: Router): Router => {
             const orgIds = memberships.map(m => m.orgID);
             const orgs = await Org.find({ _id: { $in: orgIds } });
 
-            res.status(200).json({ orgs: orgs });
+            res.status(200).json(orgs.map(org => org.toQuriedOrg()));
         }
         catch (err) {
             res.status(500).send(INTERNAL_ERR);

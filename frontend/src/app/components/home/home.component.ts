@@ -17,6 +17,7 @@ import { UserService } from 'src/app/services/backend/user.service';
 import { ToastService } from 'src/app/services/helper/toast.service';
 import { LoadingButtonComponent } from "../reusable/loading-button.component";
 import { Router } from '@angular/router';
+import { ValidatorService } from 'src/app/services/helper/validator.service';
 
 @Component({
   selector: 'app-home',
@@ -24,8 +25,8 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatTabsModule,
     MatFormFieldModule,
+    MatTabsModule,
     MatInputModule,
     MatButtonModule,
     MatCardModule,
@@ -42,6 +43,7 @@ export class HomeComponent {
     private fb: FormBuilder,
     private userService: UserService,
     private toast: ToastService,
+    private valid: ValidatorService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -68,26 +70,9 @@ export class HomeComponent {
           ],
         ],
         rePassword: ['', [Validators.required]],
-      },
-      { validators: this.mustMatch("password", "rePassword") }
+      }
     );
-  }
-
-  mustMatch(controlName: string, matchingControlName: string) {
-    return (formGroup: FormGroup) => {
-      const control = formGroup.controls[controlName];
-      const matchingControl = formGroup.controls[matchingControlName];
-
-      if (matchingControl.errors && matchingControl.errors['mustMatch']) {
-        return;
-      }
-
-      if (control.value !== matchingControl.value) {
-        matchingControl.setErrors({ mustMatch: true });
-      } else {
-        matchingControl.setErrors(null);
-      }
-    }
+    this.registerForm.setValidators(this.valid.mustMatch("password", "rePassword"));
   }
 
   getControlErrors(form: FormGroup, name: string): string[] {
@@ -118,7 +103,8 @@ export class HomeComponent {
     return errs;
   }
 
-  async onLogin() {
+  onLogin = async () => {
+    console.log(this.loginForm?.valid);
     if (this.loginForm && this.loginForm.valid) {
       try {
         const response = await this.userService.login(this.loginForm.value);
@@ -133,7 +119,7 @@ export class HomeComponent {
     }
   }
 
-  async onRegister() {
+  onRegister = async () => {
     if (this.registerForm && this.registerForm.valid) {
       try {
         const response = await this.userService.register(this.registerForm.value);

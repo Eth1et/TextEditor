@@ -7,3 +7,11 @@ export interface QueriedDocument {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface QueriedOrg {
+    orgID: string;
+    name: string;
+    description: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
