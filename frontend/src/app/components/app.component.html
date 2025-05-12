@@ -1,45 +1,49 @@
 <ng-container *ngIf="isLoggedIn; else onlyContent">
-  <mat-toolbar id="toolbar">
-    <span id="app-name-wrapper">
-      <h1 id="app-name">TextEdit</h1>
-    </span>
+  <div class="layout">
+    <mat-toolbar id="toolbar">
+      <span id="app-name-wrapper">
+        <h1 id="app-name">TextEdit</h1>
+      </span>
 
-    <span id="nav">
-      <app-loading-button
-        [clickAction]="gotoDocuments"
-        colorTheme="primary"
-        [externalDisabled]="isActive('documents')"
-        icon="description"
-        label="Docs"
-      ></app-loading-button>
-      <app-loading-button
-        [clickAction]="gotoProfile"
-        colorTheme="primary"
-        [externalDisabled]="isActive('profile')"
-        icon="person"
-        label="Profile"
-      ></app-loading-button>
-      <app-loading-button
-        [clickAction]="gotoOrgs"
-        colorTheme="primary"
-        [externalDisabled]="isActive('orgs')"
-        icon="group"
-        label="Orgs"
-      ></app-loading-button>
-      <app-loading-button
-        [clickAction]="logout"
-        colorTheme="primary"
-        icon="logout"
-        label="Logout"
-      ></app-loading-button>
-    </span>
-  </mat-toolbar>
+      <span id="nav">
+        <app-loading-button
+          [clickAction]="gotoDocuments"
+          colorTheme="primary"
+          [externalDisabled]="isActive('documents')"
+          icon="description"
+          label="Docs"
+        ></app-loading-button>
+        <app-loading-button
+          [clickAction]="gotoProfile"
+          colorTheme="primary"
+          [externalDisabled]="isActive('profile')"
+          icon="person"
+          label="Profile"
+        ></app-loading-button>
+        <app-loading-button
+          [clickAction]="gotoOrgs"
+          colorTheme="primary"
+          [externalDisabled]="isActive('orgs')"
+          icon="group"
+          label="Orgs"
+        ></app-loading-button>
+        <app-loading-button
+          [clickAction]="logout"
+          colorTheme="primary"
+          icon="logout"
+          label="Logout"
+        ></app-loading-button>
+      </span>
+    </mat-toolbar>
 
-  <div id="content">
-    <router-outlet />
+    <div id="content">
+      <router-outlet />
+    </div>
   </div>
 </ng-container>
 
 <ng-template #onlyContent>
-  <router-outlet />
+  <div class="layout">
+    <router-outlet />
+  </div>
 </ng-template>

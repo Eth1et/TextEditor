@@ -15,3 +15,11 @@ export interface QueriedOrg {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export type CreatedID = string;
+
+export interface UserDetails {
+    email: string;
+    createdAt: Date;
+    updatedAt: Date;
+}

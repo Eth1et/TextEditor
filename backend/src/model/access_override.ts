@@ -1,6 +1,6 @@
 import { Schema, Model, Document, Types } from 'mongoose';
 import mongoose from 'mongoose';
-import { Access } from '../shared/access';
+import { Access, accessValues } from '../shared/access';
 
 export interface IAccessOverride extends Document {
     _id: Types.ObjectId;
@@ -14,7 +14,7 @@ export interface IAccessOverride extends Document {
 const AccessOverrideSchema: Schema<IAccessOverride> = new mongoose.Schema({
     userID: { type: Schema.Types.ObjectId, required: true },
     docID: { type: Schema.Types.ObjectId, required: true },
-    access: { type: Number, required: true, enum: Object.values(Access), default: Access.None }
+    access: { type: Number, required: true, enum: accessValues, default: Access.None }
 }, {
     timestamps: true,
     toJSON: {

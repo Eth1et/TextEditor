@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { TupleType } from 'typescript';
 
 @Component({
   imports: [
@@ -21,7 +22,7 @@ export class LoadingButtonComponent {
   @Input() externalDisabled = false;
   @Input() buttonType: 'button' | 'submit' | 'reset' = 'button';
   @Input() colorTheme: 'primary' | 'accent' | 'warn' = 'primary';
-  @Input() clickAction!: () => Promise<any>;
+  @Input() clickAction: () => Promise<any> = async () => {};
   @Input() reuseDelay = 0.5;
 
   lastClick = 0;

@@ -9,9 +9,9 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { LoadingButtonComponent } from "../reusable/loading-button.component";
 import { QueriedDocument, QueriedOrg } from "@shared/response_models";
-import { DocumentsService } from "src/app/services/backend/docs.service";
+import { createDto, DocumentsService } from "src/app/services/backend/docs.service";
 import { ToastService } from "src/app/services/helper/toast.service";
-import { Access, accessOptions } from "@shared/access";
+import { Access, accessOptions, accessValues } from "@shared/access";
 import { Router } from "@angular/router";
 import { OrgService } from "src/app/services/backend/org.service";
 import { ValidatorService } from "src/app/services/helper/validator.service";
@@ -64,13 +64,13 @@ export class DocumentsComponent {
     this.newDocForm = this.fb.group({
       title: ['', [Validators.required]],
       publicAccess: [0, [Validators.required]],
-      orgID: ["", [Validators.required]],
+      orgID: ['', [Validators.required]],
       orgAccess: [0, []]
     });
 
     this.newDocForm.setValidators([
-      this.valid.inSetValidator('publicAccess', Object.values(Access), false),
-      this.valid.inSetValidator('orgAccess', Object.values(Access), true),
+      this.valid.inSetValidator('publicAccess', accessValues, false),
+      this.valid.inSetValidator('orgAccess', accessValues, true),
       this.valid.inSetValidatorDynamic('orgID', () => this.orgs.map(org => org.orgID).concat(["null"]), false),
     ]);
     this.newDocForm.get('orgID')?.valueChanges.subscribe(value => {
@@ -101,7 +101,11 @@ export class DocumentsComponent {
 
   async ngOnInit() {
     this.searchTerm = '';
-    await this.search();
+    try {
+      await this.search();
+    } catch (error) {
+      this.toast.showError(error);
+    }
   }
 
   search = async () => {
@@ -109,30 +113,58 @@ export class DocumentsComponent {
       this.documents = await this.docService.query({ filter: this.searchTerm });
     }
     catch (error) {
-      console.log(error);
       this.toast.showError(error);
     }
   }
 
-  newDoc = async () => {
+  openNewDoc = async () => {
+    if (this.newWindowOpen) return;
+
     try {
       this.orgs = await this.orgService.query();
       this.orgOptions = this.orgs.map(org => ({ "orgID": org.orgID, "name": org.name }));
       this.orgOptions.push({ orgID: "null", name: "None" });
       this.newWindowOpen = true;
-      console.log("done");
     } catch (error) {
       this.toast.showError(error);
       this.newWindowOpen = false;
     }
   }
 
-  createDoc = async () => {
-
+  closeNewDoc = async () => {
+    this.newWindowOpen = false;
   }
 
-  open = async () => {
+  createDoc = async () => {
+    if (this.newDocForm.invalid) return;
 
+    try {
+      let doc: createDto = this.newDocForm.value;
+      if (doc.orgID === "null") {
+        doc.orgID = undefined;
+        doc.orgAccess = Access.None;
+      }
+      const id = await this.docService.create(doc);
+      await this.openDoc(id);
+    } catch (error) {
+      this.toast.showError(error);
+    }
+  }
+
+  getOpenDoc = (docID: string): (() => Promise<void>) => {
+    return async () => { await this.openDoc(docID) };
+  }
+
+  openDoc = async (docID: string) => {
+    try {
+      const result = await this.router.navigate(['documents/editor'], { queryParams: { docID: docID } });
+      if (!result) {
+        this.toast.showError("Couldn't open editor!");
+      }
+    }
+    catch (error) {
+      this.toast.showError(error);
+    }
   }
 
   isEditor(access: Access) {

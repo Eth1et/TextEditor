@@ -11,11 +11,11 @@ import { Access } from './access';
 // User Schemas
 export const updatePasswordSchema = z.object({
     oldPassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
-    oldRePassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
     newPassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
-}).refine(data => data.oldPassword === data.oldRePassword, {
+    newRePassword: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
+}).refine(data => data.newPassword === data.newRePassword, {
     message: "Passwords do not match!",
-    path: ["oldRePassword"],
+    path: ["newRePassword"]
 });
 
 export const loginSchema = z.object({
@@ -86,8 +86,15 @@ export const searchDocumentsSchema = z.object({
     filter: z.string().toLowerCase()
 });
 
+export const createDocumentSchema = z.object({
+    orgID: z.string().optional(),
+    publicAccess: z.nativeEnum(Access),
+    orgAccess: z.nativeEnum(Access),
+    title: z.string(),
+});
+
 export const saveDocumentSchema = z.object({
-    docID: z.string().optional(),
+    docID: z.string(),
     orgID: z.string().optional(),
     publicAccess: z.nativeEnum(Access),
     orgAccess: z.nativeEnum(Access),

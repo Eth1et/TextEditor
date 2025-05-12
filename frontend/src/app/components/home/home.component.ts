@@ -104,7 +104,6 @@ export class HomeComponent {
   }
 
   onLogin = async () => {
-    console.log(this.loginForm?.valid);
     if (this.loginForm && this.loginForm.valid) {
       try {
         const response = await this.userService.login(this.loginForm.value);

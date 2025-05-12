@@ -15,14 +15,14 @@
     ></app-loading-button>
     <app-loading-button
       id="new-button"
-      [clickAction]="newDoc"
+      [clickAction]="openNewDoc"
       [colorTheme]="'primary'"
       label="New"
       icon="add"
     ></app-loading-button>
   </div>
 
-  <mat-grid-list class="grid-container" cols="10" rowHeight="5:4">
+  <mat-grid-list class="grid-container" cols="8" rowHeight="5:4">
     <ng-container *ngIf="documents.length > 0; else noResult">
       <mat-grid-tile *ngFor="let doc of documents" class="doc-tile">
         <mat-card class="doc">
@@ -38,6 +38,7 @@
           <div class="access">
             <app-loading-button
               [icon]="isEditor(doc.access) ? 'edit_note' : 'visibility'"
+              [clickAction]="getOpenDoc(doc.docID)"
             ></app-loading-button>
           </div>
         </mat-card>
@@ -49,8 +50,14 @@
   </mat-grid-list>
 </div>
 
-<div *ngIf="newWindowOpen || true" id="new-doc-form-container">
+<div *ngIf="newWindowOpen" id="new-doc-form-container">
   <form [formGroup]="newDocForm" id="new-doc-form">
+    <div class="close-button-container">
+      <app-loading-button
+        [clickAction]="closeNewDoc"
+        icon="close"
+      ></app-loading-button>
+    </div>
     <h3>Create New Document</h3>
     <mat-form-field appearance="fill">
       <mat-label>Title</mat-label>

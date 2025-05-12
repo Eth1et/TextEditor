@@ -20,8 +20,9 @@ export const validate =
         };
 
 export const configureRoutes = (router: Router): Router => {
-    configureUserRoutes(router);
-    configureDocumentRoutes(router);
-    configureOrgRoutes(router);
-    return router;
+    return configureOrgRoutes(
+        configureDocumentRoutes(
+            configureUserRoutes(router)
+        )
+    );
 };

@@ -1,4 +1,5 @@
 .everything {
+    overflow: hidden;
     width: 100%;
     height: 100%;
     background-color: #2d2d2d;
@@ -95,4 +96,11 @@
     color: var(--mat-sys-primary);
     font-size: 1.69rem;
     text-align: center;
+    margin: 0;
+    margin-bottom: 1.5rem;
+}
+
+.close-button-container {
+    display: flex;
+    justify-content: end;
 }

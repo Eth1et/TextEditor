@@ -1,0 +1,54 @@
+.root {
+    min-height: 90vh;
+    margin-top: 2rem;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 1.69rem;
+}
+.header p {
+    margin: 0;
+    margin-top: 1rem;
+    padding: 0;
+}
+.header .person-icon {
+    color: var(--mat-sys-primary);
+    font-size: 6rem;
+    margin: 0;
+    width: 6rem;
+    height: 6rem;
+}
+.header h1 {
+    margin: 0;
+    color: var(--mat-sys-primary);
+}
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Dynamic columns */
+    grid-gap: 1rem; /* Space between items */
+    padding: 1rem;
+}
+
+.forms-root {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.tabs {
+    width: 35rem;
+    overflow: hidden;
+}
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+}

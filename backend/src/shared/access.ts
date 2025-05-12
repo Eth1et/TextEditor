@@ -3,6 +3,7 @@ export enum Access {
     Viewer = 1,
     None = 0
 }
+export const accessValues = Object.values(Access).filter(value => typeof value === 'number');
 export const accessOptions = Object.keys(Access)
     .filter(key => isNaN(Number(key)))
     .map(key => ({

@@ -20,6 +20,7 @@ import {
 } from "../consts/msgs";
 import { deleteUserSchema, loginSchema, registerSchema, updatePasswordSchema } from "../shared/route_schemas";
 import { validate } from ".";
+import { UserDetails } from "../shared/response_models";
 
 
 export function ensureNotAuthenticated(req: Request, res: Response): Boolean {
@@ -93,6 +94,27 @@ export const configureUserRoutes = (router: Router): Router => {
         }
         else {
             res.sendStatus(401);
+        }
+    });
+
+    router.get('/user-details', authLimiter, async (req: Request, res: Response, _next: NextFunction) => {
+        if (!ensureAuthenticated(req, res)) return;
+
+        try {   
+            const user = await User.findById(req.user);
+            if (!user) {
+                logout(req, res, _next, SESSION_EXPIRED_ERR, 401);
+                return;
+            }
+            const data: UserDetails = {
+                email: user.email,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
+            res.status(200).json(data);
+        } 
+        catch (error) {
+            res.status(500).send(INTERNAL_ERR);
         }
     });
 

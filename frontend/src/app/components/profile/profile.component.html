@@ -1,1 +1,86 @@
-<p>profile works!</p>
+<div class="root">
+  <div class="header">
+    <mat-icon class="person-icon">person</mat-icon>
+    <h1 class="email">{{details.email}}</h1>
+    <p><b>Created:</b> {{details.createdAt.toLocaleString()}}</p>
+    <p><b>Last Password Update:</b> {{details.updatedAt.toLocaleString()}}</p>
+  </div>
+  <div class="forms-root">
+    <mat-tab-group class="tabs">
+      <mat-tab label="Update Password" class="tab">
+        <form [formGroup]="updateForm" class="form">
+          <mat-form-field appearance="fill">
+            <mat-label>Old Password</mat-label>
+            <input matInput type="password" formControlName="oldPassword" />
+            <mat-error
+              *ngFor="let error of getControlErrors(updateForm, 'oldPassword')"
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>New Password</mat-label>
+            <input matInput type="password" formControlName="newPassword" />
+            <mat-error
+              *ngFor="let error of getControlErrors(updateForm, 'newPassword')"
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Confirm New Password</mat-label>
+            <input matInput type="password" formControlName="newRePassword" />
+            <mat-error
+              *ngFor="
+                let error of getControlErrors(updateForm, 'newRePassword')
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <app-loading-button
+            colorTheme="primary"
+            [externalDisabled]="updateForm.invalid"
+            [clickAction]="onUpdate"
+            icon="update"
+            label="Update"
+          ></app-loading-button>
+        </form>
+      </mat-tab>
+      <mat-tab label="Delete Account" class="tab">
+        <form [formGroup]="deleteForm" class="form">
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" />
+            <mat-error
+              *ngFor="let error of getControlErrors(updateForm, 'password')"
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput type="password" formControlName="rePassword" />
+            <mat-error
+              *ngFor="let error of getControlErrors(updateForm, 'rePassword')"
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <app-loading-button
+            colorTheme="primary"
+            [externalDisabled]="deleteForm.invalid"
+            [clickAction]="onDelete"
+            icon="delete"
+            label="Delete"
+          ></app-loading-button>
+        </form>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

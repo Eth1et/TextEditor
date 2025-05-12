@@ -1,6 +1,6 @@
 import { Schema, Model, Document, Types, InferSchemaType, } from 'mongoose';
 import mongoose from 'mongoose';
-import { Access } from '../shared/access';
+import { Access, accessValues } from '../shared/access';
 import { QueriedDocument } from '../shared/response_models';
 
 export interface ITextDocument extends Document {
@@ -22,10 +22,10 @@ export interface ITextDocument extends Document {
 
 const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
     creator: { type: Schema.Types.ObjectId, required: true },
-    orgID: { type: Schema.Types.ObjectId, required: true },
+    orgID: { type: Schema.Types.ObjectId },
 
-    publicAccess: { type: Number, required: true, enum: Object.values(Access), default: Access.None },
-    orgAccess: { type: Number, required: true, enum: Object.values(Access), default: Access.None },
+    publicAccess: { type: Number, required: true, enum: accessValues, default: Access.None },
+    orgAccess: { type: Number, required: true, enum: accessValues, default: Access.None },
 
     title: { type: String },
     text: { type: String },
@@ -50,6 +50,19 @@ TextDocumentSchema.methods.toQueryResFormat = function (access: Access, orgName:
         updatedAt: this.updatedAt
     }
     return doc;
+}
+
+export const toDocQueryResFormatFromLeanDoc = (doc: any, access: Access, orgName: string | null) => {
+        const res: QueriedDocument = {
+        docID: doc.docID,
+        access: access,
+        title: doc.title,
+        orgName: orgName,
+        creator: doc.creator,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
+    }
+    return res;
 }
 
 export type TextDocumentType = InferSchemaType<typeof TextDocumentSchema>;

@@ -11,6 +11,7 @@ import {
 } from '@shared/route_schemas';
 
 import { environment } from '../../environments/environment';
+import { UserDetails } from '@shared/response_models';
 
 export type LoginDto = z.infer<typeof loginSchema>;
 export type RegisterDto = z.infer<typeof registerSchema>;
@@ -82,6 +83,15 @@ export class UserService {
         'delete',
         `${this.API}/delete-user`,
         { body: dto, withCredentials: true, responseType: 'text' }
+      )
+    ).catch(err => Promise.reject(handleError(err)));
+  }
+
+  async getDetails(): Promise<UserDetails> {
+    return await firstValueFrom(
+      this.http.get<UserDetails>(
+        `${this.API}/user-details`,
+        { withCredentials: true }
       )
     ).catch(err => Promise.reject(handleError(err)));
   }

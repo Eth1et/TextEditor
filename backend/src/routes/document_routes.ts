@@ -1,7 +1,7 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
-import { TOO_MANY_REQUESTS_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS, ACCESS_OVERRIDE_ALREADY_EXIST_ERR } from "../consts/msgs";
-import { addAccessOverride, deleteDocumentSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride } from "../shared/route_schemas";
+import { TOO_MANY_REQUESTS_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS, ACCESS_OVERRIDE_ALREADY_EXIST_ERR, ORG_DOESNT_EXIST_ERR } from "../consts/msgs";
+import { addAccessOverride, createDocumentSchema, deleteDocumentSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride } from "../shared/route_schemas";
 import { validate } from ".";
 import type { Types } from 'mongoose';
 import { Org } from "../model/organization";
@@ -9,8 +9,9 @@ import { OrgMembership } from "../model/org_membership";
 import { User } from "../model/user";
 import { Access } from "../shared/access";
 import { AccessOverride } from "../model/access_override";
-import { TextDocument, TextDocumentType } from "../model/text_document";
+import { TextDocument, TextDocumentType, toDocQueryResFormatFromLeanDoc } from "../model/text_document";
 import { comparePasswordAsync, ensureAuthenticated, logout } from "./user_routes";
+import { CreatedID } from "../shared/response_models";
 
 
 export async function checkUserAccess(
@@ -103,15 +104,55 @@ export const configureDocumentRoutes = (router: Router): Router => {
                 }
 
                 if (access >= Access.Viewer) {
-                    out.push(doc.toQueryResFormat(
-                        access, 
+                    out.push(toDocQueryResFormatFromLeanDoc(
+                        doc,
+                        access,
                         doc.orgID ? orgNameMap.get(doc.orgID.toString()) ?? null : null
                     ));
                 }
                 return out;
             }, [] as Array<Record<string, any>>);
 
-            res.status(200).json({ documents: visible });
+            res.status(200).json(visible);
+        }
+        catch (err) {
+            console.log(err);
+            res.status(500).send(INTERNAL_ERR);
+        }
+    });
+
+    router.post('/create-document', validate(createDocumentSchema), limiter, async (req: Request, res: Response) => {
+        if (!ensureAuthenticated(req, res)) return;
+
+        try {
+            const { title, orgID, orgAccess, publicAccess } = createDocumentSchema.parse(req.body);
+            const userID = req.user as Types.ObjectId;
+
+            // If assigning to an org, ensure they’re a member
+            if (orgID !== undefined && orgID !== null) {
+                const foundOrgId = await Org.findOne({_id: orgID});
+                if (!foundOrgId) {
+                    res.status(404).send(ORG_DOESNT_EXIST_ERR);
+                    return;
+                }
+
+                const mem = await OrgMembership.findOne({ userID, orgID });
+                if (!mem) {
+                    res.status(403).send(USER_NOT_MEMBER_OF_ORG_ERR);
+                    return;
+                }
+            }
+
+            const doc = await TextDocument.create({
+                title,
+                text: "",
+                orgID,
+                publicAccess,
+                orgAccess,
+                creator: userID,
+            });
+
+            res.status(201).send(doc._id.toString() as CreatedID);
         }
         catch (err) {
             res.status(500).send(INTERNAL_ERR);
@@ -125,65 +166,50 @@ export const configureDocumentRoutes = (router: Router): Router => {
         const userID = req.user as Types.ObjectId;
 
         try {
-            let doc;
-            let isNew = false;
+            let doc = await TextDocument.findById(docID);
+            if (!doc) {
+                res.status(404).send(NO_SUCH_DOCUMENT_ERR);
+                return;
+            }
 
-            if (docID) {
-                doc = await TextDocument.findById(docID);
-                if (!doc) {
-                    res.status(404).send(NO_SUCH_DOCUMENT_ERR);
+            // Only creator can change access settings or reassign orgID
+            const changingAccess =
+                orgAccess !== doc.orgAccess ||
+                publicAccess !== doc.publicAccess ||
+                !doc.orgID?.equals(orgID);
+
+            if (changingAccess && !doc.creator.equals(userID)) {
+                res.status(403).send(MUST_BE_CREATOR_ERR);
+                return;
+            }
+
+            if (orgID && !doc.orgID?.equals(orgID)) {
+                const mem = await OrgMembership.findOne({ userID, orgID });
+                if (!mem) {
+                    res.status(403).send(USER_NOT_MEMBER_OF_ORG_ERR);
                     return;
                 }
+            }
 
-                // Only creator can change access settings or reassign orgID
-                const changingAccess =
-                    orgAccess !== doc.orgAccess ||
-                    publicAccess !== doc.publicAccess ||
-                    (!doc.orgID?.equals(orgID));
-                if (changingAccess && !doc.creator.equals(userID)) {
-                    res.status(403).send(MUST_BE_CREATOR_ERR);
-                    return;
-                }
+            const access = await checkUserAccess(userID, doc);
+            if (access < Access.Editor) {
+                res.status(403).send(INSUFFICIENT_ACCESS_ERR);
+                return;
+            }
 
-                const access = await checkUserAccess(userID, doc);
-                if (access < Access.Editor) {
-                    res.status(403).send(INSUFFICIENT_ACCESS_ERR);
-                    return;
-                }
+            doc.title = title;
+            doc.text = text;
 
-                doc.title = title;
-                doc.text = text;
-                if (doc.creator.equals(userID)) {
-                    doc.orgID = orgID as Types.ObjectId | undefined;
-                    doc.publicAccess = publicAccess;
-                    doc.orgAccess = orgAccess;
-                }
-            } else {
-                isNew = true;
-
-                // If assigning to an org, ensure they’re a member
-                if (orgID) {
-                    const mem = await OrgMembership.findOne({ userID, orgID });
-                    if (!mem) {
-                        res.status(403).send(USER_NOT_MEMBER_OF_ORG_ERR);
-                        return;
-                    }
-                }
-
-                doc = new TextDocument({
-                    title,
-                    text,
-                    orgID,
-                    publicAccess,
-                    orgAccess,
-                    creator: userID,
-                });
+            if (doc.creator.equals(userID)) {
+                doc.orgID = orgID as Types.ObjectId | undefined;
+                doc.publicAccess = publicAccess;
+                doc.orgAccess = orgAccess;
             }
 
             await doc.save();
 
             // success
-            res.status(isNew ? 201 : 200).send(DOC_SAVE_SUCCESS);
+            res.status(200).send(DOC_SAVE_SUCCESS);
         }
         catch (err) {
             res.status(500).send(INTERNAL_ERR);

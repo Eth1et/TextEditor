@@ -25,7 +25,8 @@ export class OrgService {
         return await firstValueFrom(
             this.http.post<Array<QueriedOrg>>(
                 `${this.API}/query-orgs`,
-                { withCredentials: true }
+                {},
+                { withCredentials: true}
             )
         ).catch(err => Promise.reject(handleError(err)));
     }
