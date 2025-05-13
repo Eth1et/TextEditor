@@ -20,7 +20,7 @@ export interface QueriedOrg {
 export interface OrgDetails {
     orgID: string;
     name: string;
-    isAdmin: boolean
+    admin: boolean;
     description: string;
     createdAt: Date;
     updatedAt: Date;

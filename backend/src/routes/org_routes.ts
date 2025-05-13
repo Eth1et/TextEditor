@@ -56,7 +56,7 @@ export const configureOrgRoutes = (router: Router): Router => {
             const result: OrgDetails = {
                 orgID: orgID, 
                 name: org.name,
-                isAdmin: membership.isAdmin,
+                admin: membership.admin,
                 description: org.description,
                 createdAt: org.createdAt,
                 updatedAt: org.updatedAt,
@@ -119,7 +119,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.isAdmin) {
+            if (!membership.admin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -159,7 +159,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.isAdmin) {
+            if (!membership.admin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -205,7 +205,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 memberships.map(async (membership) => {
                     const user = await User.findById(membership.userID);
                     return {
-                        admin: membership.isAdmin,
+                        admin: membership.admin,
                         email: user?.email ?? 'unknown'
                     };
                 })
@@ -236,7 +236,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.isAdmin) {
+            if (!membership.admin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -284,7 +284,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.isAdmin) {
+            if (!membership.admin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -340,7 +340,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.isAdmin) {
+            if (!membership.admin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -362,7 +362,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            membership.isAdmin = admin;
+            membership.admin = admin;
             await membership.save();
 
             res.status(200).send(MEMBER_UPDATE_SUCCESS);

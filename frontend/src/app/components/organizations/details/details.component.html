@@ -1,4 +1,5 @@
 <div class="root">
+    {{orgDetails | json}}
   <div class="header">
     <mat-icon class="person-icon">group</mat-icon>
     <h1 class="email">{{ orgDetails.name }}</h1>
@@ -7,7 +8,7 @@
     <p><b>Last Update:</b> {{ orgDetails.updatedAt.toLocaleString() }}</p>
   </div>
   <div class="forms-root">
-    <ng-container *ngIf="orgDetails.isAdmin; else membersOnly">
+    <ng-container *ngIf="orgDetails.admin; else membersOnly">
       <mat-tab-group class="tabs">
         <mat-tab label="Update Details" class="tab">
           <form [formGroup]="updateForm" class="form">
