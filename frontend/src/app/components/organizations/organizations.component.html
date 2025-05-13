@@ -1,1 +1,68 @@
-<p>organizations works!</p>
+<div class="root">
+  <mat-card class="org-container">
+    <mat-card class="header">
+      <h1 class="header-title">Organizations</h1>
+    </mat-card>
+    <div class="contents">
+      <ng-container *ngIf="orgs.length > 0 || true">
+        <ng-container *ngFor="let org of orgs">
+          <mat-card class="org">
+            <h1 class="org-name">{{ org.name }}</h1>
+            <p class="org-desc">{{ org.description }}</p>
+            <div class="open-button-container">
+              <app-loading-button
+                icon="visibility"
+                [clickAction]="getOpenOrg(org.orgID)"
+              ></app-loading-button>
+            </div>
+          </mat-card>
+        </ng-container>
+      </ng-container>
+    </div>
+    <div class="add-container">
+      <app-loading-button
+        label="Create New"
+        icon="add"
+        [clickAction]="openNewOrg"
+      ></app-loading-button>
+    </div>
+  </mat-card>
+</div>
+
+<div *ngIf="newWindowOpen" id="new-org-form-container">
+  <form [formGroup]="newOrgForm" id="new-org-form">
+    <div class="close-button-container">
+      <app-loading-button
+        [clickAction]="closeNewOrg"
+        icon="close"
+      ></app-loading-button>
+    </div>
+    <h3>Create New Organization</h3>
+    <mat-form-field appearance="fill">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" />
+      <mat-error
+        *ngFor="let error of valid.getControlErrors(newOrgForm, 'name')"
+      >
+        {{ error }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Description</mat-label>
+      <input matInput formControlName="description" />
+      <mat-error
+        *ngFor="let error of valid.getControlErrors(newOrgForm, 'description')"
+      >
+        {{ error }}
+      </mat-error>
+    </mat-form-field>
+
+    <app-loading-button
+      label="Create"
+      icon="add"
+      [externalDisabled]="newOrgForm.invalid"
+      [clickAction]="createOrg"
+    ></app-loading-button>
+  </form>
+</div>

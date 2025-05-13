@@ -1,3 +1,4 @@
+
 export interface QueriedDocument {
     docID: string;
     title: string;
@@ -11,6 +12,15 @@ export interface QueriedDocument {
 export interface QueriedOrg {
     orgID: string;
     name: string;
+    description: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface OrgDetails {
+    orgID: string;
+    name: string;
+    isAdmin: boolean
     description: string;
     createdAt: Date;
     updatedAt: Date;

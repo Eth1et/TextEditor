@@ -5,7 +5,36 @@ import { AbstractControl, FormGroup, ValidationErrors, ValidatorFn } from '@angu
     providedIn: 'root'
 })
 export class ValidatorService {
-    mustMatch(controlName: string, matchingControlName: string): ValidatorFn {
+    getControlErrors(form: FormGroup, name: string): string[] {
+        const ctrl = form.get(name);
+
+        if (!ctrl || !ctrl.errors) return [];
+
+        const errs = [];
+        if (ctrl.hasError('required')) {
+            errs.push('This field is required');
+        }
+        else if (ctrl.hasError('minlength')) {
+            errs.push(
+                `Must be at least ${ctrl.errors!['minlength'].requiredLength} characters`
+            );
+        }
+        else if (ctrl.hasError('maxlength')) {
+            errs.push(
+                `Must be at most ${ctrl.errors!['maxlength'].requiredLength} characters`
+            );
+        }
+        else if (ctrl.hasError('mustMatch')) {
+            errs.push(ctrl.getError('mustMatch'));
+        }
+        else if (ctrl.hasError('notInSet')) {
+            const e = ctrl.getError('notInSet');
+            errs.push(`Invalid value: ${e.value}, valid options: ${e.allowedValues}`);
+        }
+        return errs;
+    }
+
+    mustMatch(controlName: string, matchingControlName: string, notMacthingMessage: string): ValidatorFn {
         return (formGroup: AbstractControl): ValidationErrors | null => {
             const group = formGroup as FormGroup;
             const control = group.controls[controlName];
@@ -14,7 +43,9 @@ export class ValidatorService {
             if (!control || !matchingControl) return null;
 
             if (control.value !== matchingControl.value) {
-                return { mustMatch: true };
+                matchingControl.setErrors({
+                    mustMatch: notMacthingMessage
+                });
             }
 
             return null;
@@ -31,12 +62,12 @@ export class ValidatorService {
 
             const value = control.value;
             if (!allowedValues.includes(value)) {
-                return {
+                control.setErrors({
                     notInSet: {
                         value,
                         allowed: allowedValues
                     }
-                };
+                });
             }
 
             return null;

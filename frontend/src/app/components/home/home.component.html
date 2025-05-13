@@ -76,7 +76,7 @@
             <mat-label>Email</mat-label>
             <input matInput formControlName="email" />
             <mat-error
-              *ngFor="let error of getControlErrors(loginForm, 'email')"
+              *ngFor="let error of valid.getControlErrors(loginForm, 'email')"
             >
               {{ error }}
             </mat-error>
@@ -86,7 +86,7 @@
             <mat-label>Password</mat-label>
             <input matInput type="password" formControlName="password" />
             <mat-error
-              *ngFor="let error of getControlErrors(loginForm, 'password')"
+              *ngFor="let error of valid.getControlErrors(loginForm, 'password')"
             >
               {{ error }}
             </mat-error>
@@ -110,7 +110,7 @@
             <mat-label>Email</mat-label>
             <input matInput formControlName="email" />
             <mat-error
-              *ngFor="let error of getControlErrors(registerForm, 'email')"
+              *ngFor="let error of valid.getControlErrors(registerForm, 'email')"
             >
               {{ error }}
             </mat-error>
@@ -120,7 +120,7 @@
             <mat-label>Password</mat-label>
             <input matInput type="password" formControlName="password" />
             <mat-error
-              *ngFor="let error of getControlErrors(registerForm, 'password')"
+              *ngFor="let error of valid.getControlErrors(registerForm, 'password')"
             >
               {{ error }}
             </mat-error>
@@ -130,7 +130,7 @@
             <mat-label>Confirm Password</mat-label>
             <input matInput type="password" formControlName="rePassword" />
             <mat-error
-              *ngFor="let error of getControlErrors(registerForm, 'rePassword')"
+              *ngFor="let error of valid.getControlErrors(registerForm, 'rePassword')"
             >
               {{ error }}
             </mat-error>

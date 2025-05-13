@@ -5,7 +5,7 @@ export interface IOrgMembership extends Document {
     _id: Types.ObjectId;
     userID: Types.ObjectId;
     orgID: Types.ObjectId;
-    admin: boolean;
+    isAdmin: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -13,7 +13,7 @@ export interface IOrgMembership extends Document {
 const OrgMembershipSchema: Schema<IOrgMembership> = new mongoose.Schema({
     userID: { type: Schema.Types.ObjectId, required: true },
     orgID: { type: Schema.Types.ObjectId, required: true },
-    admin: { type: Boolean, required: true }
+    isAdmin: { type: Boolean, required: true }
 }, {
     timestamps: true,
     toJSON: {

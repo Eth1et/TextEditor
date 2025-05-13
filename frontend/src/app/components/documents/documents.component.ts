@@ -55,7 +55,7 @@ export class DocumentsComponent {
     private toast: ToastService,
     private docService: DocumentsService,
     private fb: FormBuilder,
-    private valid: ValidatorService,
+    public valid: ValidatorService,
     private router: Router,
     private orgService: OrgService
   ) {
@@ -81,22 +81,6 @@ export class DocumentsComponent {
         orgAccessControl?.enable();
       }
     });
-  }
-
-  getControlErrors = (form: FormGroup, name: string): string[] => {
-    const ctrl = form.get(name);
-
-    if (!ctrl || !ctrl.errors) return [];
-
-    const errs = [];
-    if (ctrl.hasError('required')) {
-      errs.push('This field is required');
-    }
-    else if (ctrl.hasError('notInSet')) {
-      const err = ctrl.getError('notInSet');
-      errs.push(`Invalid value: ${err?.get("value")}, valid options: ${err?.get("allowed")}`);
-    }
-    return errs;
   }
 
   async ngOnInit() {

@@ -1,12 +1,13 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import { CANNOT_REMOVE_SELF_ERR, CANNOT_UPDATE_SELF_MEMBERSHIP_ERR, INCORRECT_PASSWORD_ERR, INTERNAL_ERR, MEMBER_ADD_SUCCESS, MEMBER_REMOVED_SUCCESS, MEMBER_UPDATE_SUCCESS, NO_ADMIN_PERMISSION_ON_ORG_ERR, NO_USER_WITH_GIVEN_EMAIL_ERR, NOT_LOGGED_IN_ERR, ORG_CREATED_SUCCESS, ORG_DELETD_SUCESS, ORG_DOESNT_EXIST_ERR, ORG_NAME_TAKEN_ERR, ORG_UPDATED_SUCCESS, SESSION_EXPIRED_ERR, TOO_MANY_REQUESTS_ERR, USER_ALREADY_MEMBER_ERR, USER_NOT_MEMBER_OF_ORG_ERR } from "../consts/msgs";
-import { createOrgSchema, deleteOrgSchema, updateOrgSchema, addMemberSchema, removeMemberSchema, updateMemberSchema, queryMembersSchema } from "../shared/route_schemas";
+import { createOrgSchema, deleteOrgSchema, updateOrgSchema, addMemberSchema, removeMemberSchema, updateMemberSchema, queryMembersSchema, orgDetailsSchema } from "../shared/route_schemas";
 import { validate } from ".";
 import { Org } from "../model/organization";
 import { OrgMembership } from "../model/org_membership";
 import { User } from "../model/user";
 import { comparePasswordAsync, ensureAuthenticated, logout } from "./user_routes";
+import { CreatedID, OrgDetails } from "../shared/response_models";
 
 
 export const configureOrgRoutes = (router: Router): Router => {
@@ -33,6 +34,40 @@ export const configureOrgRoutes = (router: Router): Router => {
         }
     });
 
+    router.post('/org-details', limiter, validate(orgDetailsSchema), async (req: Request, res: Response, _next: NextFunction) => {
+        if (!ensureAuthenticated(req, res)) return;
+
+        try {
+            const { orgID } = orgDetailsSchema.parse(req.body);
+
+            const id = req.user;
+
+            const org = await Org.findById(orgID);
+            if (!org) {
+                res.status(404).send(ORG_DOESNT_EXIST_ERR);
+                return;
+            }
+
+            const membership = await OrgMembership.findOne({ userID: id, orgID: orgID });
+            if (!membership) {
+                res.status(404).send(USER_NOT_MEMBER_OF_ORG_ERR);
+                return;
+            }
+            const result: OrgDetails = {
+                orgID: orgID, 
+                name: org.name,
+                isAdmin: membership.isAdmin,
+                description: org.description,
+                createdAt: org.createdAt,
+                updatedAt: org.updatedAt,
+            };
+            res.status(200).json(result);
+        }
+        catch (err) {
+            res.status(500).send(INTERNAL_ERR);
+        }
+    });
+
     router.post('/create-org', validate(createOrgSchema), limiter, async (req: Request, res: Response) => {
         if (!ensureAuthenticated(req, res)) return;
 
@@ -45,14 +80,14 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            const org = await Org.create({ name, description });
+            const created = await Org.create({ name, description });
 
             await OrgMembership.create({
                 userID: req.user,
-                orgID: org._id,
+                orgID: created._id,
                 admin: true
             });
-            res.status(200).send(ORG_CREATED_SUCCESS);
+            res.status(200).send(created._id.toString() as CreatedID);
         }
         catch (err) {
             res.status(500).send(INTERNAL_ERR);
@@ -84,7 +119,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.admin) {
+            if (!membership.isAdmin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -124,7 +159,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.admin) {
+            if (!membership.isAdmin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -132,6 +167,12 @@ export const configureOrgRoutes = (router: Router): Router => {
             const org = await Org.findById(orgID);
             if (!org) {
                 res.status(404).send(ORG_DOESNT_EXIST_ERR);
+                return;
+            }
+
+            const alreadyExists = await Org.findOne({ name: name });
+            if (alreadyExists) {
+                res.status(403).send(ORG_NAME_TAKEN_ERR);
                 return;
             }
 
@@ -164,7 +205,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 memberships.map(async (membership) => {
                     const user = await User.findById(membership.userID);
                     return {
-                        admin: membership.admin,
+                        admin: membership.isAdmin,
                         email: user?.email ?? 'unknown'
                     };
                 })
@@ -195,7 +236,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.admin) {
+            if (!membership.isAdmin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -243,7 +284,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.admin) {
+            if (!membership.isAdmin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -299,7 +340,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            if (!membership.admin) {
+            if (!membership.isAdmin) {
                 res.status(403).send(NO_ADMIN_PERMISSION_ON_ORG_ERR);
                 return;
             }
@@ -321,7 +362,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            membership.admin = admin;
+            membership.isAdmin = admin;
             await membership.save();
 
             res.status(200).send(MEMBER_UPDATE_SUCCESS);

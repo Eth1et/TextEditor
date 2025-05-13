@@ -46,6 +46,10 @@ export const createOrgSchema = z.object({
     description: z.string().max(MAX_ORG_DESC_LENGTH),
 });
 
+export const orgDetailsSchema = z.object({
+    orgID: z.string(),
+});
+
 export const deleteOrgSchema = z.object({
     orgID: z.string(),
     password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),

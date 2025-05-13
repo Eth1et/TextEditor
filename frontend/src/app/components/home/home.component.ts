@@ -43,7 +43,7 @@ export class HomeComponent {
     private fb: FormBuilder,
     private userService: UserService,
     private toast: ToastService,
-    private valid: ValidatorService,
+    public valid: ValidatorService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -72,35 +72,7 @@ export class HomeComponent {
         rePassword: ['', [Validators.required]],
       }
     );
-    this.registerForm.setValidators(this.valid.mustMatch("password", "rePassword"));
-  }
-
-  getControlErrors(form: FormGroup, name: string): string[] {
-    const ctrl = form.get(name);
-
-    if (!ctrl || !ctrl.errors) return [];
-
-    const errs = [];
-    if (ctrl.hasError('required')) {
-      errs.push('This field is required');
-    }
-    else if (ctrl.hasError('email')) {
-      errs.push('Please enter a valid email address');
-    }
-    else if (ctrl.hasError('minlength')) {
-      errs.push(
-        `Must be at least ${ctrl.errors!['minlength'].requiredLength} characters`
-      );
-    }
-    else if (ctrl.hasError('maxlength')) {
-      errs.push(
-        `Must be at most ${ctrl.errors!['maxlength'].requiredLength} characters`
-      );
-    }
-    else if (ctrl.hasError('mustMatch')) {
-      errs.push('Passwords do not match');
-    }
-    return errs;
+    this.registerForm.setValidators(this.valid.mustMatch("password", "rePassword", "Passwords do not match"));
   }
 
   onLogin = async () => {

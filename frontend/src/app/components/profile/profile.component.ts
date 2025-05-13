@@ -36,12 +36,12 @@ export class ProfileComponent {
     updatedAt: new Date()
   };
 
-  constructor(private router: Router, private fb: FormBuilder, private valid: ValidatorService, private toast: ToastService, private userService: UserService) {
+  constructor(private router: Router, private fb: FormBuilder, public valid: ValidatorService, private toast: ToastService, private userService: UserService) {
     this.deleteForm = fb.group({
       password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH), Validators.maxLength(MAX_PASSWORD_LENGTH)]],
       rePassword: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH), Validators.maxLength(MAX_PASSWORD_LENGTH)]],
     });
-    this.deleteForm.setValidators(this.valid.mustMatch("password", "rePassword"));
+    this.deleteForm.setValidators([this.valid.mustMatch("password", "rePassword", "Passwords do not match")]);
 
     this.updateForm = this.fb.group(
       {
@@ -50,7 +50,7 @@ export class ProfileComponent {
         newRePassword: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH), Validators.maxLength(MAX_PASSWORD_LENGTH)]],
       }
     );
-    this.updateForm.setValidators([this.valid.mustMatch("newPassword", "newRePassword")]);
+    this.updateForm.setValidators([this.valid.mustMatch("newPassword", "newRePassword", "New Passwords do not match")]);
   }
 
   async ngOnInit() {
@@ -76,34 +76,10 @@ export class ProfileComponent {
 
     try {
       this.toast.showSuccess(await this.userService.deleteUser(this.deleteForm.value));
+      this.updateForm.reset();
       await this.router.navigateByUrl('login');
     } catch (error) {
       this.toast.showError(error);
     }
-  }
-
-  getControlErrors(form: FormGroup, name: string): string[] {
-    const ctrl = form.get(name);
-
-    if (!ctrl || !ctrl.errors) return [];
-
-    const errs = [];
-    if (ctrl.hasError('required')) {
-      errs.push('This field is required');
-    }
-    else if (ctrl.hasError('minlength')) {
-      errs.push(
-        `Must be at least ${ctrl.errors!['minlength'].requiredLength} characters`
-      );
-    }
-    else if (ctrl.hasError('maxlength')) {
-      errs.push(
-        `Must be at most ${ctrl.errors!['maxlength'].requiredLength} characters`
-      );
-    }
-    else if (ctrl.hasError('mustMatch')) {
-      errs.push('Passwords do not match');
-    }
-    return errs;
   }
 }

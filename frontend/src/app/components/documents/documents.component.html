@@ -62,7 +62,7 @@
     <mat-form-field appearance="fill">
       <mat-label>Title</mat-label>
       <input matInput formControlName="title" />
-      <mat-error *ngFor="let error of getControlErrors(newDocForm, 'title')">
+      <mat-error *ngFor="let error of valid.getControlErrors(newDocForm, 'title')">
         {{ error }}
       </mat-error>
     </mat-form-field>
@@ -75,7 +75,7 @@
         </mat-option>
       </mat-select>
       <mat-error
-        *ngFor="let error of getControlErrors(newDocForm, 'publicAccess')"
+        *ngFor="let error of valid.getControlErrors(newDocForm, 'publicAccess')"
       >
         {{ error }}
       </mat-error>
@@ -88,7 +88,7 @@
           {{ org.name }}
         </mat-option>
       </mat-select>
-      <mat-error *ngFor="let error of getControlErrors(newDocForm, 'orgID')">
+      <mat-error *ngFor="let error of valid.getControlErrors(newDocForm, 'orgID')">
         {{ error }}
       </mat-error>
     </mat-form-field>
@@ -101,7 +101,7 @@
         </mat-option>
       </mat-select>
       <mat-error
-        *ngFor="let error of getControlErrors(newDocForm, 'orgAccess')"
+        *ngFor="let error of valid.getControlErrors(newDocForm, 'orgAccess')"
       >
         {{ error }}
       </mat-error>

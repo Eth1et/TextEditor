@@ -84,7 +84,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
             ]);
 
             const overrideMap = new Map(overrides.map(o => [o.docID.toString(), o.access]));
-            const membershipMap = new Map(memberships.map(m => [m.orgID.toString(), m.admin]));
+            const membershipMap = new Map(memberships.map(m => [m.orgID.toString(), m.isAdmin]));
             const orgNameMap = new Map(orgs.map(o => [o._id.toString(), o.name]));
 
             const visible = docs.reduce((out, doc) => {
@@ -116,7 +116,6 @@ export const configureDocumentRoutes = (router: Router): Router => {
             res.status(200).json(visible);
         }
         catch (err) {
-            console.log(err);
             res.status(500).send(INTERNAL_ERR);
         }
     });

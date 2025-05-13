@@ -13,7 +13,7 @@
             <mat-label>Old Password</mat-label>
             <input matInput type="password" formControlName="oldPassword" />
             <mat-error
-              *ngFor="let error of getControlErrors(updateForm, 'oldPassword')"
+              *ngFor="let error of valid.getControlErrors(updateForm, 'oldPassword')"
             >
               {{ error }}
             </mat-error>
@@ -23,7 +23,7 @@
             <mat-label>New Password</mat-label>
             <input matInput type="password" formControlName="newPassword" />
             <mat-error
-              *ngFor="let error of getControlErrors(updateForm, 'newPassword')"
+              *ngFor="let error of valid.getControlErrors(updateForm, 'newPassword')"
             >
               {{ error }}
             </mat-error>
@@ -34,7 +34,7 @@
             <input matInput type="password" formControlName="newRePassword" />
             <mat-error
               *ngFor="
-                let error of getControlErrors(updateForm, 'newRePassword')
+                let error of valid.getControlErrors(updateForm, 'newRePassword')
               "
             >
               {{ error }}
@@ -56,7 +56,7 @@
             <mat-label>Password</mat-label>
             <input matInput type="password" formControlName="password" />
             <mat-error
-              *ngFor="let error of getControlErrors(updateForm, 'password')"
+              *ngFor="let error of valid.getControlErrors(deleteForm, 'password')"
             >
               {{ error }}
             </mat-error>
@@ -66,7 +66,7 @@
             <mat-label>Confirm Password</mat-label>
             <input matInput type="password" formControlName="rePassword" />
             <mat-error
-              *ngFor="let error of getControlErrors(updateForm, 'rePassword')"
+              *ngFor="let error of valid.getControlErrors(deleteForm, 'rePassword')"
             >
               {{ error }}
             </mat-error>

@@ -1,0 +1,96 @@
+<div class="root">
+  <div class="header">
+    <mat-icon class="person-icon">group</mat-icon>
+    <h1 class="email">{{ orgDetails.name }}</h1>
+    <p>{{ orgDetails.description }}</p>
+    <p><b>Created:</b> {{ orgDetails.createdAt.toLocaleString() }}</p>
+    <p><b>Last Update:</b> {{ orgDetails.updatedAt.toLocaleString() }}</p>
+  </div>
+  <div class="forms-root">
+    <ng-container *ngIf="orgDetails.isAdmin; else membersOnly">
+      <mat-tab-group class="tabs">
+        <mat-tab label="Update Details" class="tab">
+          <form [formGroup]="updateForm" class="form">
+            <mat-form-field appearance="fill">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="name" />
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(updateForm, 'name')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="description" />
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(updateForm, 'description')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Password Confirmation</mat-label>
+              <input matInput type="password" formControlName="password" />
+              <mat-error
+                *ngFor="let error of valid.getControlErrors(updateForm, 'password')"
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <app-loading-button
+              colorTheme="primary"
+              [externalDisabled]="updateForm.invalid"
+              [clickAction]="onUpdate"
+              icon="update"
+              label="Update"
+            ></app-loading-button>
+          </form>
+        </mat-tab>
+        <mat-tab label="Delete Account" class="tab">
+          <form [formGroup]="deleteForm" class="form">
+            <mat-form-field appearance="fill">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" formControlName="password" />
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(deleteForm, 'password')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput type="password" formControlName="rePassword" />
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(deleteForm, 'rePassword')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <app-loading-button
+              colorTheme="primary"
+              [externalDisabled]="deleteForm.invalid"
+              [clickAction]="onDelete"
+              icon="delete"
+              label="Delete"
+            ></app-loading-button>
+          </form>
+        </mat-tab>
+      </mat-tab-group>
+    </ng-container>
+    <ng-template #membersOnly> </ng-template>
+  </div>
+</div>
