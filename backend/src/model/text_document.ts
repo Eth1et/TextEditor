@@ -34,31 +34,32 @@ const TextDocumentSchema: Schema<ITextDocument> = new mongoose.Schema({
     toJSON: {
         transform(_doc, ret) {
             delete ret.__v;
+            delete ret.creator;
             return ret;
         },
     },
 });
 
-TextDocumentSchema.methods.toQueryResFormat = function (access: Access, orgName: string | null) {
+TextDocumentSchema.methods.toQueryResFormat = function (access: Access, orgName: string | null, creator: string) {
     const doc: QueriedDocument = {
         docID: this.docID,
         access: access,
         title: this.title,
         orgName: orgName,
-        creator: this.creator,
+        creator: creator,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt
     }
     return doc;
 }
 
-export const toDocQueryResFormatFromLeanDoc = (doc: any, access: Access, orgName: string | null) => {
+export const toDocQueryResFormatFromLeanDoc = (doc: any, access: Access, orgName: string | null, creator: string) => {
         const res: QueriedDocument = {
         docID: doc.docID,
         access: access,
         title: doc.title,
         orgName: orgName,
-        creator: doc.creator,
+        creator: creator,
         createdAt: doc.createdAt,
         updatedAt: doc.updatedAt
     }

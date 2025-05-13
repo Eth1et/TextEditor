@@ -53,7 +53,6 @@ export class AppComponent {
       this.isLoggedIn = await this.userService.isLoggedIn();
     }
     catch (error) {
-      console.log(error);
       this.isLoggedIn = false;
     }
   }

@@ -1,13 +1,13 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
-import { CANNOT_REMOVE_SELF_ERR, CANNOT_UPDATE_SELF_MEMBERSHIP_ERR, INCORRECT_PASSWORD_ERR, INTERNAL_ERR, MEMBER_ADD_SUCCESS, MEMBER_REMOVED_SUCCESS, MEMBER_UPDATE_SUCCESS, NO_ADMIN_PERMISSION_ON_ORG_ERR, NO_USER_WITH_GIVEN_EMAIL_ERR, NOT_LOGGED_IN_ERR, ORG_CREATED_SUCCESS, ORG_DELETD_SUCESS, ORG_DOESNT_EXIST_ERR, ORG_NAME_TAKEN_ERR, ORG_UPDATED_SUCCESS, SESSION_EXPIRED_ERR, TOO_MANY_REQUESTS_ERR, USER_ALREADY_MEMBER_ERR, USER_NOT_MEMBER_OF_ORG_ERR } from "../consts/msgs";
+import { CANNOT_REMOVE_SELF_ERR, CANNOT_UPDATE_SELF_MEMBERSHIP_ERR, INCORRECT_PASSWORD_ERR, INTERNAL_ERR, MEMBER_ADD_SUCCESS, MEMBER_REMOVED_SUCCESS, MEMBER_UPDATE_SUCCESS, MUST_BE_CREATOR_ERR, NO_ADMIN_PERMISSION_ON_ORG_ERR, NO_USER_WITH_GIVEN_EMAIL_ERR, NOT_LOGGED_IN_ERR, ORG_CREATED_SUCCESS, ORG_DELETD_SUCESS, ORG_DOESNT_EXIST_ERR, ORG_NAME_TAKEN_ERR, ORG_UPDATED_SUCCESS, SESSION_EXPIRED_ERR, TOO_MANY_REQUESTS_ERR, USER_ALREADY_MEMBER_ERR, USER_NOT_MEMBER_OF_ORG_ERR } from "../consts/msgs";
 import { createOrgSchema, deleteOrgSchema, updateOrgSchema, addMemberSchema, removeMemberSchema, updateMemberSchema, queryMembersSchema, orgDetailsSchema } from "../shared/route_schemas";
 import { validate } from ".";
 import { Org } from "../model/organization";
 import { OrgMembership } from "../model/org_membership";
 import { User } from "../model/user";
 import { comparePasswordAsync, ensureAuthenticated, logout } from "./user_routes";
-import { CreatedID, OrgDetails } from "../shared/response_models";
+import { CreatedID, OrgDetails, QueriedMember } from "../shared/response_models";
 
 
 export const configureOrgRoutes = (router: Router): Router => {
@@ -26,10 +26,16 @@ export const configureOrgRoutes = (router: Router): Router => {
 
             const orgIds = memberships.map(m => m.orgID);
             const orgs = await Org.find({ _id: { $in: orgIds } });
+            const creatorIDs = orgs.map(org => org.creator);
+            const creators = await User.find({ _id: { $in: creatorIDs } });
+            const creatorMap = new Map(
+                creators.map(creator => [creator._id.toString(), creator.email])
+            );
 
-            res.status(200).json(orgs.map(org => org.toQuriedOrg()));
+            res.status(200).json(orgs.map(org => org.toQuriedOrg(creatorMap.get(org.creator.toString()) ?? "unknown")));
         }
         catch (err) {
+            console.log(err);
             res.status(500).send(INTERNAL_ERR);
         }
     });
@@ -53,10 +59,18 @@ export const configureOrgRoutes = (router: Router): Router => {
                 res.status(404).send(USER_NOT_MEMBER_OF_ORG_ERR);
                 return;
             }
+            const creator = await User.findById(org.creator);
+            if (!creator) {
+                res.status(500).send(INTERNAL_ERR);
+                return;
+            }
+
             const result: OrgDetails = {
-                orgID: orgID, 
+                orgID: orgID,
                 name: org.name,
                 admin: membership.admin,
+                creator: creator.email,
+                isCreator: id === creator._id.toString(),
                 description: org.description,
                 createdAt: org.createdAt,
                 updatedAt: org.updatedAt,
@@ -80,7 +94,7 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
-            const created = await Org.create({ name, description });
+            const created = await Org.create({ name, description, creator: req.user });
 
             await OrgMembership.create({
                 userID: req.user,
@@ -124,6 +138,13 @@ export const configureOrgRoutes = (router: Router): Router => {
                 return;
             }
 
+            const org = await Org.findOne({_id: orgID});
+
+            if (org?.creator.toString() !== req.user) {
+                res.status(403).send(MUST_BE_CREATOR_ERR);
+                return;
+            }
+
             await Org.deleteOne({ _id: orgID });
             await OrgMembership.deleteMany({ orgID });
 
@@ -134,7 +155,7 @@ export const configureOrgRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/update-org', validate(updateOrgSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.patch('/update-org', validate(updateOrgSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         const { orgID, name, description, password } = updateOrgSchema.parse(req.body);
@@ -171,7 +192,7 @@ export const configureOrgRoutes = (router: Router): Router => {
             }
 
             const alreadyExists = await Org.findOne({ name: name });
-            if (alreadyExists) {
+            if (alreadyExists && alreadyExists._id.toString() !== orgID) {
                 res.status(403).send(ORG_NAME_TAKEN_ERR);
                 return;
             }
@@ -201,32 +222,48 @@ export const configureOrgRoutes = (router: Router): Router => {
 
             const memberships = await OrgMembership.find({ orgID: orgID });
 
-            const members = await Promise.all(
+            const members: Array<QueriedMember> = await Promise.all(
                 memberships.map(async (membership) => {
                     const user = await User.findById(membership.userID);
+                    const adder = await User.findById(membership.addedBy);
                     return {
                         admin: membership.admin,
-                        email: user?.email ?? 'unknown'
+                        email: user?.email ?? 'unknown',
+                        addedBy: adder?.email ?? 'unknown',
+                        isCreator: user?._id === adder?._id
                     };
                 })
-            );
+            );                                                                                                                                                                                                                               
 
-            res.status(200).json({ members: members });
-        }
+            res.status(200).json(members);
+        }                              
         catch (err) {
             res.status(500).send(INTERNAL_ERR);
         }
     });
 
-    router.post('/add-member', validate(addMemberSchema), limiter, async (req: Request, res: Response) => {
+    router.post('/add-member', validate(addMemberSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
-        const { email, admin, orgID } = addMemberSchema.parse(req.body);
+        const { email, admin, orgID, password } = addMemberSchema.parse(req.body);
 
         try {
             const user = await User.findOne({ email: email });
             if (!user) {
                 res.status(404).send(NO_USER_WITH_GIVEN_EMAIL_ERR);
+                return;
+            }
+
+            const thisUser = await User.findById(req.user);
+            if (!thisUser) {
+                logout(req, res, _next, SESSION_EXPIRED_ERR, 401);
+                return;
+            }
+
+            const isMatch = await comparePasswordAsync(thisUser, password);
+
+            if (!isMatch) {
+                res.status(401).send(INCORRECT_PASSWORD_ERR);
                 return;
             }
 
@@ -250,7 +287,8 @@ export const configureOrgRoutes = (router: Router): Router => {
             await OrgMembership.create({
                 userID: user._id,
                 orgID: orgID,
-                admin: admin
+                admin: admin,
+                addedBy: req.user
             });
             res.status(200).send(MEMBER_ADD_SUCCESS);
         }
@@ -259,7 +297,7 @@ export const configureOrgRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/remove-member', validate(removeMemberSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.delete('/remove-member', validate(removeMemberSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         const { email, password, orgID } = removeMemberSchema.parse(req.body);
@@ -315,7 +353,7 @@ export const configureOrgRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/update-member', validate(updateMemberSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.patch('/update-member', validate(updateMemberSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         const { password, orgID, admin, email } = updateMemberSchema.parse(req.body);

@@ -66,6 +66,7 @@ export const addMemberSchema = z.object({
     orgID: z.string(),
     email: z.string().email().toLowerCase(),
     admin: z.boolean(),
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
 });
 
 export const removeMemberSchema = z.object({

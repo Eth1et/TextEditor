@@ -1,24 +1,123 @@
 <div class="root">
-    {{orgDetails | json}}
   <div class="header">
     <mat-icon class="person-icon">group</mat-icon>
     <h1 class="email">{{ orgDetails.name }}</h1>
     <p>{{ orgDetails.description }}</p>
-    <p><b>Created:</b> {{ orgDetails.createdAt.toLocaleString() }}</p>
+    <p>
+      <b>Created:</b> {{ orgDetails.createdAt.toLocaleString() }} by
+      {{ orgDetails.creator }}
+    </p>
     <p><b>Last Update:</b> {{ orgDetails.updatedAt.toLocaleString() }}</p>
   </div>
   <div class="forms-root">
-    <ng-container *ngIf="orgDetails.admin; else membersOnly">
-      <mat-tab-group class="tabs">
+    <mat-tab-group class="tabs">
+      <mat-tab label="Members" class="tab">
+        <div class="members">
+          <mat-card *ngFor="let member of members" class="member">
+            <div class="member-texts">
+              <h3 class="member-email">{{ member.email }}</h3>
+              <h4 class="member-addedby">
+                <b>Added By:</b> {{ member.email }}
+              </h4>
+            </div>
+            <ng-container *ngIf="member.admin || member.isCreator">
+              <mat-icon>{{ member.isCreator ? "edit" : "shield" }}</mat-icon>
+            </ng-container>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <ng-container *ngIf="orgDetails.admin">
+        <mat-tab label="Manage Members" class="tab">
+          <form [formGroup]="membershipForm" class="form">
+            <mat-form-field appearance="fill">
+              <mat-label>Action</mat-label>
+              <mat-select formControlName="action">
+                <mat-option *ngFor="let action of actions" [value]="action">
+                  {{ action }}
+                </mat-option>
+              </mat-select>
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(membershipForm, 'action')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" />
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(deleteForm, 'email')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <ng-container
+              *ngIf="membershipForm?.get('action')?.value !== 'DELETE'"
+            >
+              <mat-form-field appearance="fill">
+                <mat-label>Admin Access</mat-label>
+                <mat-select formControlName="admin">
+                  <mat-option [value]="false">No</mat-option>
+                  <mat-option [value]="true">Yes</mat-option>
+                </mat-select>
+                <mat-error
+                  *ngFor="
+                    let error of valid.getControlErrors(deleteForm, 'admin')
+                  "
+                >
+                  {{ error }}
+                </mat-error>
+              </mat-form-field>
+            </ng-container>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Password Confirmation</mat-label>
+              <input matInput type="password" formControlName="password" />
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(deleteForm, 'password')
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+
+            <app-loading-button
+              colorTheme="primary"
+              [externalDisabled]="membershipForm.invalid"
+              [clickAction]="onMembership"
+              [icon]="
+                membershipForm.get('action')?.value === 'DELETE'
+                  ? 'delete'
+                  : membershipForm.get('action')?.value === 'MODIFY'
+                  ? 'update'
+                  : 'add'
+              "
+              [label]="
+                membershipForm.get('action')?.value === 'DELETE'
+                  ? 'Delete'
+                  : membershipForm.get('action')?.value === 'MODIFY'
+                  ? 'Modify'
+                  : 'Add'
+              "
+            ></app-loading-button>
+          </form>
+        </mat-tab>
+
         <mat-tab label="Update Details" class="tab">
           <form [formGroup]="updateForm" class="form">
             <mat-form-field appearance="fill">
               <mat-label>Name</mat-label>
               <input matInput formControlName="name" />
               <mat-error
-                *ngFor="
-                  let error of valid.getControlErrors(updateForm, 'name')
-                "
+                *ngFor="let error of valid.getControlErrors(updateForm, 'name')"
               >
                 {{ error }}
               </mat-error>
@@ -40,7 +139,9 @@
               <mat-label>Password Confirmation</mat-label>
               <input matInput type="password" formControlName="password" />
               <mat-error
-                *ngFor="let error of valid.getControlErrors(updateForm, 'password')"
+                *ngFor="
+                  let error of valid.getControlErrors(updateForm, 'password')
+                "
               >
                 {{ error }}
               </mat-error>
@@ -55,43 +156,33 @@
             ></app-loading-button>
           </form>
         </mat-tab>
-        <mat-tab label="Delete Account" class="tab">
-          <form [formGroup]="deleteForm" class="form">
-            <mat-form-field appearance="fill">
-              <mat-label>Password</mat-label>
-              <input matInput type="password" formControlName="password" />
-              <mat-error
-                *ngFor="
-                  let error of valid.getControlErrors(deleteForm, 'password')
-                "
-              >
-                {{ error }}
-              </mat-error>
-            </mat-form-field>
 
-            <mat-form-field appearance="fill">
-              <mat-label>Confirm Password</mat-label>
-              <input matInput type="password" formControlName="rePassword" />
-              <mat-error
-                *ngFor="
-                  let error of valid.getControlErrors(deleteForm, 'rePassword')
-                "
-              >
-                {{ error }}
-              </mat-error>
-            </mat-form-field>
+        <ng-container *ngIf="orgDetails.isCreator">
+          <mat-tab label="Deletion" class="tab">
+            <form [formGroup]="deleteForm" class="form">
+              <mat-form-field appearance="fill">
+                <mat-label>Password Confirmation</mat-label>
+                <input matInput type="password" formControlName="password" />
+                <mat-error
+                  *ngFor="
+                    let error of valid.getControlErrors(deleteForm, 'password')
+                  "
+                >
+                  {{ error }}
+                </mat-error>
+              </mat-form-field>
 
-            <app-loading-button
-              colorTheme="primary"
-              [externalDisabled]="deleteForm.invalid"
-              [clickAction]="onDelete"
-              icon="delete"
-              label="Delete"
-            ></app-loading-button>
-          </form>
-        </mat-tab>
-      </mat-tab-group>
-    </ng-container>
-    <ng-template #membersOnly> </ng-template>
+              <app-loading-button
+                colorTheme="primary"
+                [externalDisabled]="deleteForm.invalid"
+                [clickAction]="onDelete"
+                icon="delete"
+                label="Delete"
+              ></app-loading-button>
+            </form>
+          </mat-tab>
+        </ng-container>
+      </ng-container>
+    </mat-tab-group>
   </div>
 </div>

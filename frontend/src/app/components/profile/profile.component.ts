@@ -76,7 +76,7 @@ export class ProfileComponent {
 
     try {
       this.toast.showSuccess(await this.userService.deleteUser(this.deleteForm.value));
-      this.updateForm.reset();
+      this.deleteForm.reset();
       await this.router.navigateByUrl('login');
     } catch (error) {
       this.toast.showError(error);

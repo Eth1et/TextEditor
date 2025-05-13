@@ -1,1 +1,30 @@
-<p>editor works!</p>
+<div class="root">
+  <div class="header">
+    <app-loading-button
+      icon="arrow_back"
+      [clickAction]="closeDoc"
+    ></app-loading-button>
+    <mat-button-toggle-group
+      name="windowMode"
+      aria-label="Window Mode"
+      class="window-mode"
+    >
+      <mat-button-toggle value="editor"><mat-icon>edit_note</mat-icon></mat-button-toggle>
+      <mat-button-toggle value="preview"><mat-icon>visibility</mat-icon></mat-button-toggle>
+      <mat-button-toggle value="both"><mat-icon>splitscreen</mat-icon></mat-button-toggle>
+    </mat-button-toggle-group>
+    <span class="buttons">
+      <app-loading-button
+        icon="save"
+        label="Save"
+        [clickAction]="onSave"
+      ></app-loading-button>
+      <app-loading-button
+        icon="settings"
+        label="Settings"
+        [clickAction]="openSettings"
+      ></app-loading-button>
+    </span>
+  </div>
+  <div class="content-holder"></div>
+</div>

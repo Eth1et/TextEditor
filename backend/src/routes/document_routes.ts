@@ -27,7 +27,7 @@ export async function checkUserAccess(
         return override.access;
     }
 
-    if (doc.publicAccess === Access.Viewer || doc.publicAccess === Access.Editor) {
+    if (doc.publicAccess === Access.Editor) {
         return doc.publicAccess;
     }
 
@@ -36,6 +36,10 @@ export async function checkUserAccess(
         if (membership && (doc.orgAccess === Access.Viewer || doc.orgAccess === Access.Editor)) {
             return doc.orgAccess;
         }
+    }
+
+    if (doc.publicAccess === Access.Viewer) {
+        return doc.publicAccess;
     }
 
     return Access.None;
@@ -83,8 +87,14 @@ export const configureDocumentRoutes = (router: Router): Router => {
                 Org.find({ _id: { $in: orgIDs } }, { _id: 1, name: 1 }).lean()
             ]);
 
+            const creatorIDs = docs.map(doc => doc.creator);
+            const creators = await User.find({ _id: { $in: creatorIDs } });
+            const creatorMap = new Map(
+                creators.map(creator => [creator._id.toString(), creator.email])
+            );
+
             const overrideMap = new Map(overrides.map(o => [o.docID.toString(), o.access]));
-            const membershipMap = new Map(memberships.map(m => [m.orgID.toString(), m.isAdmin]));
+            const membershipMap = new Map(memberships.map(m => [m.orgID.toString(), m.admin]));
             const orgNameMap = new Map(orgs.map(o => [o._id.toString(), o.name]));
 
             const visible = docs.reduce((out, doc) => {
@@ -94,11 +104,16 @@ export const configureDocumentRoutes = (router: Router): Router => {
                     if (doc.creator.equals(userID)) {
                         access = Access.Editor;
                     }
+                    else if (doc.publicAccess >= Access.Editor) {
+                        access = doc.publicAccess;
+                    }
+                    else if (doc.orgID && membershipMap.has(doc.orgID.toString()) && doc.orgAccess >= Access.Viewer) {
+                        access = doc.orgAccess;
+                    }
                     else if (doc.publicAccess >= Access.Viewer) {
                         access = doc.publicAccess;
-                    } else if (doc.orgID && membershipMap.get(doc.orgID.toString()) && doc.orgAccess >= Access.Viewer) {
-                        access = doc.orgAccess;
-                    } else {
+                    }
+                    else {
                         access = Access.None;
                     }
                 }
@@ -107,7 +122,8 @@ export const configureDocumentRoutes = (router: Router): Router => {
                     out.push(toDocQueryResFormatFromLeanDoc(
                         doc,
                         access,
-                        doc.orgID ? orgNameMap.get(doc.orgID.toString()) ?? null : null
+                        doc.orgID ? orgNameMap.get(doc.orgID.toString()) ?? null : null,
+                        creatorMap.get(doc.creator.toString()) ?? "unknown"
                     ));
                 }
                 return out;
@@ -129,7 +145,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
 
             // If assigning to an org, ensure they’re a member
             if (orgID !== undefined && orgID !== null) {
-                const foundOrgId = await Org.findOne({_id: orgID});
+                const foundOrgId = await Org.findOne({ _id: orgID });
                 if (!foundOrgId) {
                     res.status(404).send(ORG_DOESNT_EXIST_ERR);
                     return;
@@ -158,7 +174,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/save-document', validate(saveDocumentSchema), limiter, async (req: Request, res: Response) => {
+    router.patch('/save-document', validate(saveDocumentSchema), limiter, async (req: Request, res: Response) => {
         if (!ensureAuthenticated(req, res)) return;
 
         const { title, text, orgID, orgAccess, publicAccess, docID } = saveDocumentSchema.parse(req.body);
@@ -215,7 +231,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/delete-document', validate(deleteDocumentSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.delete('/delete-document', validate(deleteDocumentSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         try {
@@ -307,7 +323,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/update-access-override', validate(updateAccessOverride), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.patch('/update-access-override', validate(updateAccessOverride), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         try {
@@ -356,7 +372,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
         }
     });
 
-    router.post('/remove-access-override', validate(removeAccessOverride), limiter, async (req: Request, res: Response, _next: NextFunction) => {
+    router.delete('/remove-access-override', validate(removeAccessOverride), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
 
         try {

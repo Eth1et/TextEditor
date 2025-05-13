@@ -19,7 +19,6 @@ export class UnauthGuard implements CanActivate {
             if (isLoggedIn) return this.router.createUrlTree(['documents']);
             return true;
         } catch (error) {
-            console.log(error)
             return true;
         }
     }

@@ -15,6 +15,7 @@ import { ValidatorService } from "src/app/services/helper/validator.service";
 import { MatSelectModule } from "@angular/material/select";
 import { MatOptionModule } from "@angular/material/core";
 import { QueriedOrg } from "@shared/response_models";
+import { MAX_ORG_DESC_LENGTH, MAX_ORG_NAME_LENGTH, MIN_ORG_NAME_LENGTH } from "@shared/constants";
 
 @Component({
   standalone: true,
@@ -54,8 +55,8 @@ export class OrganizationsComponent {
   ) {
 
     this.newOrgForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: ['', []],
+      name: ['', [Validators.required, Validators.minLength(MIN_ORG_NAME_LENGTH), Validators.maxLength(MAX_ORG_NAME_LENGTH)]],
+      description: ['', [Validators.maxLength(MAX_ORG_DESC_LENGTH)]],
     });
   }
 

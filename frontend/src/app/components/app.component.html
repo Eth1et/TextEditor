@@ -1,4 +1,4 @@
-<ng-container *ngIf="isLoggedIn; else onlyContent">
+<ng-container *ngIf="isLoggedIn && !isActive('documents/editor'); else onlyContent">
   <div class="layout">
     <mat-toolbar id="toolbar">
       <span id="app-name-wrapper">
@@ -36,7 +36,7 @@
       </span>
     </mat-toolbar>
 
-    <div id="content">
+    <div class="content">
       <router-outlet />
     </div>
   </div>
@@ -44,6 +44,8 @@
 
 <ng-template #onlyContent>
   <div class="layout">
-    <router-outlet />
+    <div class="content">
+      <router-outlet />
+    </div>
   </div>
 </ng-template>
