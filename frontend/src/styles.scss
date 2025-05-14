@@ -1,16 +1,22 @@
 html,
 body {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    min-width: 100vw;
+    min-height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
     overflow-x: hidden;
     overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
 }
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-.snackbar-success > *  {
+.snackbar-success > * {
     outline: 1px solid #4bb34f;
     color: #fff;
 }
@@ -18,4 +24,24 @@ body {
 .snackbar-error > * {
     outline: 1px solid #f44336;
     color: #fff;
+}
+
+.editor-content-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.editor-editor,
+.NgxEditor {
+    height: 100%;
+    width: 100%;
+    display: block;
+    overflow: auto;
+}
+.editor-editor {
+    overflow: hidden;
+}
+.NgxEditor__MenuBar {
+    border-bottom: 2px solid var(--mat-sys-primary);
 }

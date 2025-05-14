@@ -9,6 +9,21 @@ export interface QueriedDocument {
     updatedAt: Date;
 }
 
+export interface DocumentDetails {
+    docID: string;
+    title: string;
+    text: string;
+    access: number;
+    isCreator: boolean;
+    orgName: string | null;
+    publicAccess: number;
+    orgAccess: number;
+    orgID: string;
+    creator: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface QueriedOrg {
     orgID: string;
     name: string;
@@ -42,4 +57,10 @@ export interface UserDetails {
     email: string;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface QueriedOverride {
+    email: string;
+    access: number;
+    addedBy: string;
 }

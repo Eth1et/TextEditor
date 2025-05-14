@@ -42,5 +42,5 @@ export const
     MUST_BE_CREATOR_ERR = 'Only the creator can perform this action!',
     ORG_DOESNT_EXIST_ERR = 'Organization does not exist.',
     INSUFFICIENT_ACCESS_ERR = 'You do not have the permission.',
-    ACCESS_OVERRIDE_DOESNT_EXIST_ERR = 'The access ovveride doesn\'exists.',
+    ACCESS_OVERRIDE_DOESNT_EXIST_ERR = 'The access ovveride doesn\'t exist.',
     ACCESS_OVERRIDE_ALREADY_EXIST_ERR = 'Acess override to this person already exists';

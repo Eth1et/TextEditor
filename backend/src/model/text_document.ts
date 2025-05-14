@@ -55,7 +55,7 @@ TextDocumentSchema.methods.toQueryResFormat = function (access: Access, orgName:
 
 export const toDocQueryResFormatFromLeanDoc = (doc: any, access: Access, orgName: string | null, creator: string) => {
         const res: QueriedDocument = {
-        docID: doc.docID,
+        docID: doc._id.toString(),
         access: access,
         title: doc.title,
         orgName: orgName,

@@ -100,11 +100,19 @@ export const createDocumentSchema = z.object({
 
 export const saveDocumentSchema = z.object({
     docID: z.string(),
+    title: z.string(),
+    text: z.string()
+});
+
+export const docPriviligesSchema = z.object({
+    docID: z.string(),
     orgID: z.string().optional(),
     publicAccess: z.nativeEnum(Access),
     orgAccess: z.nativeEnum(Access),
-    title: z.string(),
-    text: z.string()
+});
+
+export const docDetailsSchema = z.object({
+    docID: z.string(),
 });
 
 export const deleteDocumentSchema = z.object({

@@ -102,7 +102,7 @@ export class OrganizationsComponent {
 
   openOrg = async (orgID: string) => {
     try {
-      const result = await this.router.navigate(['orgs/details'], { queryParams: { orgID: orgID } });
+      const result = await this.router.navigate(['orgs', 'details'], { queryParams: { orgID: orgID } });
       if (!result) {
         this.toast.showError("Couldn't open organization!");
       }

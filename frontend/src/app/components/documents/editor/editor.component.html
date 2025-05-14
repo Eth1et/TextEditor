@@ -2,29 +2,277 @@
   <div class="header">
     <app-loading-button
       icon="arrow_back"
+      label="Documents"
       [clickAction]="closeDoc"
     ></app-loading-button>
     <mat-button-toggle-group
       name="windowMode"
       aria-label="Window Mode"
       class="window-mode"
+      [(value)]="windowMode"
+      (change)="onWindowModeChange($event)"
     >
-      <mat-button-toggle value="editor"><mat-icon>edit_note</mat-icon></mat-button-toggle>
-      <mat-button-toggle value="preview"><mat-icon>visibility</mat-icon></mat-button-toggle>
-      <mat-button-toggle value="both"><mat-icon>splitscreen</mat-icon></mat-button-toggle>
+      <mat-button-toggle value="editor"
+        ><mat-icon>edit_note</mat-icon></mat-button-toggle
+      >
+      <mat-button-toggle value="preview"
+        ><mat-icon>visibility</mat-icon></mat-button-toggle
+      >
+      <mat-button-toggle value="both"
+        ><mat-icon>splitscreen</mat-icon></mat-button-toggle
+      >
     </mat-button-toggle-group>
     <span class="buttons">
       <app-loading-button
+        *ngIf="isEditor()"
         icon="save"
         label="Save"
         [clickAction]="onSave"
       ></app-loading-button>
       <app-loading-button
+        *ngIf="isCreator()"
         icon="settings"
         label="Settings"
         [clickAction]="openSettings"
       ></app-loading-button>
     </span>
   </div>
-  <div class="content-holder"></div>
+  <div class="content-holder">
+    <div
+      class="editor"
+      *ngIf="windowMode === 'editor' || windowMode === 'both'"
+    >
+      <ngx-editor-menu [editor]="editor" [toolbar]="toolbar"> </ngx-editor-menu>
+      <div class="editor-content-wrapper">
+        <ngx-editor
+          class="editor-editor"
+          [editor]="editor"
+          [(ngModel)]="editorContent"
+          [disabled]="!isEditor()"
+          [placeholder]="'Type here...'"
+        ></ngx-editor>
+      </div>
+    </div>
+    <div
+      class="preview"
+      [innerHTML]="sanitized()"
+      *ngIf="windowMode === 'preview' || windowMode === 'both'"
+    ></div>
+  </div>
+</div>
+
+<div *ngIf="settingsWindowOpen" id="new-doc-form-container">
+  <div class="tabs-container">
+    <div class="close-button-container">
+      <app-loading-button
+        [clickAction]="closeSettings"
+        icon="close"
+      ></app-loading-button>
+    </div>
+    <mat-tab-group class="tabs">
+      <mat-tab label="Privileges" class="tab">
+        <form [formGroup]="settingsForm" class="form">
+          <mat-form-field appearance="fill">
+            <mat-label>Public Access</mat-label>
+            <mat-select formControlName="publicAccess">
+              <mat-option
+                *ngFor="let access of accessOptions"
+                [value]="access.value"
+              >
+                {{ access.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(
+                  settingsForm,
+                  'publicAccess'
+                )
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Org</mat-label>
+            <mat-select formControlName="orgID">
+              <mat-option *ngFor="let org of orgOptions" [value]="org.orgID">
+                {{ org.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(settingsForm, 'orgID')
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Org Access</mat-label>
+            <mat-select formControlName="orgAccess">
+              <mat-option
+                *ngFor="let access of accessOptions"
+                [value]="access.value"
+              >
+                {{ access.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(settingsForm, 'orgAccess')
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <app-loading-button
+            label="Update"
+            icon="update"
+            [externalDisabled]="settingsForm.invalid"
+            [clickAction]="commitSettings"
+          ></app-loading-button>
+        </form>
+      </mat-tab>
+      <mat-tab label="Manage Access" class="tab">
+        <form [formGroup]="accessOverrideForm" class="form">
+          <mat-form-field appearance="fill">
+            <mat-label>Action</mat-label>
+            <mat-select formControlName="action">
+              <mat-option
+                *ngFor="let action of accessActionOptions"
+                [value]="action"
+              >
+                {{ action }}
+              </mat-option>
+            </mat-select>
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(
+                  accessOverrideForm,
+                  'action'
+                )
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" />
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(accessOverrideForm, 'email')
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <ng-container
+            *ngIf="accessOverrideForm?.get('action')?.value !== 'Remove'"
+          >
+            <mat-form-field appearance="fill">
+              <mat-label>Access</mat-label>
+              <mat-select formControlName="access">
+                <mat-option
+                  *ngFor="let access of accessOptions"
+                  [value]="access.value"
+                >
+                  {{ access.label }}
+                </mat-option>
+              </mat-select>
+              <mat-error
+                *ngFor="
+                  let error of valid.getControlErrors(
+                    accessOverrideForm,
+                    'access'
+                  )
+                "
+              >
+                {{ error }}
+              </mat-error>
+            </mat-form-field>
+          </ng-container>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Password Confirmation</mat-label>
+            <input matInput type="password" formControlName="password" />
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(
+                  accessOverrideForm,
+                  'password'
+                )
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+
+          <app-loading-button
+            colorTheme="primary"
+            [externalDisabled]="accessOverrideForm.invalid"
+            [clickAction]="onAccessOverride"
+            [icon]="
+              accessOverrideForm.get('action')?.value === 'Remove'
+                ? 'delete'
+                : accessOverrideForm.get('action')?.value === 'Modify'
+                ? 'update'
+                : 'add'
+            "
+            [label]="
+              accessOverrideForm.get('action')?.value === 'Remove'
+                ? 'Delete'
+                : accessOverrideForm.get('action')?.value === 'Modify'
+                ? 'Modify'
+                : 'Add'
+            "
+          ></app-loading-button>
+        </form>
+      </mat-tab>
+      <mat-tab label="Overrides" class="tab">
+        <div class="overrides">
+          <mat-card *ngFor="let override of accessOverrides" class="override">
+            <div class="override-texts">
+              <h3 class="override-email">{{ override.email }}</h3>
+              <h4 class="override-addedby">
+                <b>Added By:</b> {{ override.addedBy }} <b>=></b>
+                {{ accessToString(override.access) }}
+              </h4>
+            </div>
+          </mat-card>
+        </div>
+      </mat-tab>
+      <mat-tab label="Delete" class="tab">
+        <form [formGroup]="deleteForm" class="form">
+          <mat-form-field appearance="fill">
+            <mat-label>Password Confirmation</mat-label>
+            <input matInput type="password" formControlName="password" />
+            <mat-error
+              *ngFor="
+                let error of valid.getControlErrors(
+                  deleteForm,
+                  'password'
+                )
+              "
+            >
+              {{ error }}
+            </mat-error>
+          </mat-form-field>
+          <app-loading-button
+            colorTheme="primary"
+            [externalDisabled]="deleteForm.invalid"
+            [clickAction]="onDelete"
+            icon="delete"
+            label="Delete Document"
+          ></app-loading-button>
+        </form>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
 </div>

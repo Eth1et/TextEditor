@@ -141,7 +141,7 @@ export class DocumentsComponent {
 
   openDoc = async (docID: string) => {
     try {
-      const result = await this.router.navigate(['documents/editor'], { queryParams: { docID: docID } });
+      const result = await this.router.navigate(['documents', 'editor'], { queryParams: { docID } });
       if (!result) {
         this.toast.showError("Couldn't open editor!");
       }

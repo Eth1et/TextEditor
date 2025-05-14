@@ -1,7 +1,7 @@
 import { Request, Router, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import { TOO_MANY_REQUESTS_ERR, INTERNAL_ERR, NO_SUCH_DOCUMENT_ERR, MUST_BE_CREATOR_ERR, DOC_SAVE_SUCCESS, SESSION_EXPIRED_ERR, INCORRECT_PASSWORD_ERR, DOC_DELETE_SUCCESS, NO_USER_WITH_GIVEN_EMAIL_ERR, USER_NOT_MEMBER_OF_ORG_ERR, INSUFFICIENT_ACCESS_ERR, ACCESS_OVERRIDE_DOESNT_EXIST_ERR, ACCESS_OVERRIDE_SUCCESS, ACCESS_OVERRIDE_ALREADY_EXIST_ERR, ORG_DOESNT_EXIST_ERR } from "../consts/msgs";
-import { addAccessOverride, createDocumentSchema, deleteDocumentSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride } from "../shared/route_schemas";
+import { addAccessOverride, createDocumentSchema, deleteDocumentSchema, docDetailsSchema, docPriviligesSchema, queryAccessOverride, removeAccessOverride, saveDocumentSchema, searchDocumentsSchema, updateAccessOverride } from "../shared/route_schemas";
 import { validate } from ".";
 import type { Types } from 'mongoose';
 import { Org } from "../model/organization";
@@ -11,7 +11,7 @@ import { Access } from "../shared/access";
 import { AccessOverride } from "../model/access_override";
 import { TextDocument, TextDocumentType, toDocQueryResFormatFromLeanDoc } from "../model/text_document";
 import { comparePasswordAsync, ensureAuthenticated, logout } from "./user_routes";
-import { CreatedID } from "../shared/response_models";
+import { CreatedID, DocumentDetails, QueriedOverride } from "../shared/response_models";
 
 
 export async function checkUserAccess(
@@ -136,6 +136,51 @@ export const configureDocumentRoutes = (router: Router): Router => {
         }
     });
 
+    router.post('/document-details', limiter, validate(docDetailsSchema), async (req: Request, res: Response, _next: NextFunction) => {
+        if (!ensureAuthenticated(req, res)) return;
+
+        try {
+            const { docID } = docDetailsSchema.parse(req.body);
+
+            const id = req.user;
+
+            let user = await User.findById(id);
+
+            let doc = await TextDocument.findById(docID);
+            if (!doc) {
+                res.status(404).send(NO_SUCH_DOCUMENT_ERR);
+                return;
+            }
+
+            const access = await checkUserAccess(id as Types.ObjectId, doc);
+            if (access < Access.Viewer) {
+                res.status(403).send(INSUFFICIENT_ACCESS_ERR);
+                return;
+            }
+
+            let org = doc.orgID ? await Org.findById(doc.orgID) : null;
+
+            const result: DocumentDetails = {
+                docID: doc._id.toString(),
+                orgName: org ? org.name : null,
+                orgID: doc.orgID?.toString() ?? "null",
+                title: doc.title,
+                text: doc.text,
+                createdAt: doc.createdAt,
+                updatedAt: doc.updatedAt,
+                creator: user?.email ?? "unknown",
+                isCreator: doc.creator.toString() === id,
+                publicAccess: doc.publicAccess,
+                orgAccess: doc.orgAccess,
+                access: access
+            };
+            res.status(200).json(result);
+        }
+        catch (err) {
+            res.status(500).send(INTERNAL_ERR);
+        }
+    });
+
     router.post('/create-document', validate(createDocumentSchema), limiter, async (req: Request, res: Response) => {
         if (!ensureAuthenticated(req, res)) return;
 
@@ -177,7 +222,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
     router.patch('/save-document', validate(saveDocumentSchema), limiter, async (req: Request, res: Response) => {
         if (!ensureAuthenticated(req, res)) return;
 
-        const { title, text, orgID, orgAccess, publicAccess, docID } = saveDocumentSchema.parse(req.body);
+        const { title, text, docID } = saveDocumentSchema.parse(req.body);
         const userID = req.user as Types.ObjectId;
 
         try {
@@ -185,25 +230,6 @@ export const configureDocumentRoutes = (router: Router): Router => {
             if (!doc) {
                 res.status(404).send(NO_SUCH_DOCUMENT_ERR);
                 return;
-            }
-
-            // Only creator can change access settings or reassign orgID
-            const changingAccess =
-                orgAccess !== doc.orgAccess ||
-                publicAccess !== doc.publicAccess ||
-                !doc.orgID?.equals(orgID);
-
-            if (changingAccess && !doc.creator.equals(userID)) {
-                res.status(403).send(MUST_BE_CREATOR_ERR);
-                return;
-            }
-
-            if (orgID && !doc.orgID?.equals(orgID)) {
-                const mem = await OrgMembership.findOne({ userID, orgID });
-                if (!mem) {
-                    res.status(403).send(USER_NOT_MEMBER_OF_ORG_ERR);
-                    return;
-                }
             }
 
             const access = await checkUserAccess(userID, doc);
@@ -215,11 +241,37 @@ export const configureDocumentRoutes = (router: Router): Router => {
             doc.title = title;
             doc.text = text;
 
-            if (doc.creator.equals(userID)) {
-                doc.orgID = orgID as Types.ObjectId | undefined;
-                doc.publicAccess = publicAccess;
-                doc.orgAccess = orgAccess;
+            await doc.save();
+
+            res.status(200).send(DOC_SAVE_SUCCESS);
+        }
+        catch (err) {
+            res.status(500).send(INTERNAL_ERR);
+        }
+    });
+
+    router.patch('/update-document', validate(docPriviligesSchema), limiter, async (req: Request, res: Response) => {
+        if (!ensureAuthenticated(req, res)) return;
+
+        const { orgID, orgAccess, publicAccess, docID } = docPriviligesSchema.parse(req.body);
+        const userID = req.user as Types.ObjectId;
+
+        try {
+            let doc = await TextDocument.findById(docID);
+            if (!doc) {
+                res.status(404).send(NO_SUCH_DOCUMENT_ERR);
+                return;
             }
+
+            // Only creator can change access settings or reassign orgID
+            if (!doc.creator.equals(userID)) {
+                res.status(403).send(MUST_BE_CREATOR_ERR);
+                return;
+            }
+
+            doc.orgID = orgID as Types.ObjectId | undefined;
+            doc.publicAccess = publicAccess;
+            doc.orgAccess = orgAccess;
 
             await doc.save();
 
@@ -230,6 +282,7 @@ export const configureDocumentRoutes = (router: Router): Router => {
             res.status(500).send(INTERNAL_ERR);
         }
     });
+
 
     router.delete('/delete-document', validate(deleteDocumentSchema), limiter, async (req: Request, res: Response, _next: NextFunction) => {
         if (!ensureAuthenticated(req, res)) return;
@@ -314,7 +367,8 @@ export const configureDocumentRoutes = (router: Router): Router => {
             await AccessOverride.create({
                 docID: docID,
                 userID: addedUser._id,
-                access: access
+                access: access,
+                addedBy: thisUser._id
             });
             res.status(201).send(ACCESS_OVERRIDE_SUCCESS);
         }
@@ -445,13 +499,17 @@ export const configureDocumentRoutes = (router: Router): Router => {
             const users = await User.find({ _id: { $in: userIDs } }).select('email').lean();
             const userMap = new Map(users.map(u => [u._id.toString(), u.email]));
 
+            const adderIDs = overrides.map(o => o.addedBy.toString());
+            const adderUsers = await User.find({ _id: { $in: adderIDs } });
+            const adderMap = new Map(adderUsers.map(user => [user._id.toString(), user.email]));
 
-            const accessOverrides = overrides.map(o => ({
+            const accessOverrides: Array<QueriedOverride> = overrides.map(o => ({
                 email: userMap.get(o.userID.toString()) ?? 'Unknown',
-                access: o.access
+                access: o.access,
+                addedBy: adderMap.get(o.addedBy.toString()) ?? 'unknown'
             }));
 
-            res.status(201).json({ accessOverrides: accessOverrides });
+            res.status(201).json(accessOverrides);
         }
         catch (error) {
             res.status(500).send(INTERNAL_ERR);

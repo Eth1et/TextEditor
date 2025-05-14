@@ -35,7 +35,6 @@ export const configureOrgRoutes = (router: Router): Router => {
             res.status(200).json(orgs.map(org => org.toQuriedOrg(creatorMap.get(org.creator.toString()) ?? "unknown")));
         }
         catch (err) {
-            console.log(err);
             res.status(500).send(INTERNAL_ERR);
         }
     });
