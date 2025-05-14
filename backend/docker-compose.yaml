@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  mongo:
+    build: .
+    image: db
+    container_name: mongo-seeded
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
