@@ -3,6 +3,10 @@
 ## Backend:
 open a terminal
 
+### Environment:
+Create a copy of the .env.example or rename it to .env
+[Optional]: set your custom parameters in it
+
 ### Start Database:
 Start docker on your system, then
 
